@@ -36,7 +36,8 @@ const CARD_WIDTH = width - 20;
 const CARD_HEIGHT = CARD_WIDTH * 1.25;
 
 // Rewarded Test ID for Video Ads
-const rewardedAdUnitId = (TestIds) ? (__DEV__ ? TestIds.REWARDED : 'ca-app-pub-1193994269728560/YOUR_REWARDED_ID') : null;
+const rewardedAdUnitId = (TestIds) ? (__DEV__ ? TestIds.REWARDED : 'ca-app-pub-1193994269728560/9611804004') : null;
+// const rewardedAdUnitId = 'ca-app-pub-1193994269728560/9611804004'
 
 const COLORS = [
     '#FFFFFF', '#000000', '#7B61FF', '#22C55E', '#EF4444',
@@ -84,6 +85,7 @@ export default function Editor({ route, navigation }) {
     const [activeTab, setActiveTab] = useState('color');
     const [isFavorite, setIsFavorite] = useState(false);
     const [isText2Unlocked, setIsText2Unlocked] = useState(false);
+    const [isEmergencyUnlocked, setIsEmergencyUnlocked] = useState(false); // New State for Strategy B
     const [watermarkVisible, setWatermarkVisible] = useState(false);
 
     const viewShotRef = useRef();
@@ -94,6 +96,18 @@ export default function Editor({ route, navigation }) {
     }) : { load: () => { }, show: () => { }, isLoaded: false, isEarnedReward: false, isClosed: false };
 
     const { isLoaded, isEarnedReward, show, load, isClosed } = rewarded;
+
+    // EMERGENCY UNLOCK TIMER LOGIC
+    useEffect(() => {
+        let timer;
+        if (!isText2Unlocked && !isLoaded) {
+            timer = setTimeout(() => {
+                // console.log("15 seconds passed, ad not loaded. Enabling Emergency Unlock.");
+                setIsEmergencyUnlocked(true);
+            }, 30000); // 30 seconds timeout
+        }
+        return () => { if (timer) clearTimeout(timer); };
+    }, [isLoaded, isText2Unlocked]);
 
     // Auto-load the video ad when the screen opens
     useEffect(() => {
@@ -112,6 +126,7 @@ export default function Editor({ route, navigation }) {
     // Reload ad after it is closed so it's ready for next time
     useEffect(() => {
         if (isClosed) {
+            setIsEmergencyUnlocked(false); // Reset emergency state to try ad again
             load(); // Start fetching the next ad immediately
         }
     }, [isClosed, load]);
@@ -196,21 +211,38 @@ export default function Editor({ route, navigation }) {
     };
 
     const handleAddText2Press = () => {
+        const labels = selectedLanguage?.labels; // Shortcut
         if (isText2Unlocked) {
             setEditingTarget(2);
             setShowInput(true);
         } else {
             if (isLoaded) {
                 Alert.alert(
-                    "Unlock Feature",
-                    "Watch a video to add a second text layer for this session.",
+                    labels?.unlock_feature || "Unlock Feature",
+                    labels?.watch_ad_msg || "Watch a video to add a second text layer.",
                     [
-                        { text: "Cancel", style: "cancel" },
-                        { text: "Watch Ad", onPress: () => show() } // TRIGGER THE REAL VIDEO
+                        { text: labels?.cancel_btn || "Cancel", style: "cancel" },
+                        { text: labels?.watch_btn || "Watch Ad", onPress: () => show() }
+                    ]
+                );
+            } else if (isEmergencyUnlocked) {
+                // Strategy B: Emergency Unlock Alert
+                Alert.alert(
+                    labels?.unlock_feature || "Quick Unlock",
+                    "The video is taking too long to load. To save you time, we've unlocked this feature for you!",
+                    [
+                        {
+                            text: labels?.done_btn || "Awesome!",
+                            onPress: () => {
+                                setIsText2Unlocked(true);
+                                setEditingTarget(2);
+                                setShowInput(true);
+                            }
+                        }
                     ]
                 );
             } else {
-                Alert.alert("Ad Loading", "Video is not ready yet, trying to reload...");
+                Alert.alert("Ad Loading", labels?.ad_loading || "Video is not ready yet. Please wait a few more seconds...");
                 load();
             }
         }
@@ -238,7 +270,7 @@ export default function Editor({ route, navigation }) {
             <StatusBar barStyle="light-content" />
 
             <View style={styles.canvasWrapper}>
-                <BannerAdSlot />
+                <BannerAdSlot unitId="ca-app-pub-1193994269728560/9803375695" />
 
                 <ViewShot ref={viewShotRef} options={{ format: "jpg", quality: 0.9 }} style={styles.viewShot}>
                     <ImageBackground source={{ uri: imageUri }} style={styles.mainImage} resizeMode="cover" {...backgroundPanResponder.panHandlers}>
@@ -261,18 +293,21 @@ export default function Editor({ route, navigation }) {
                         )}
                     </ImageBackground>
                 </ViewShot>
-
-                {/* <BannerAdSlot /> */}
             </View>
 
             {editingTarget !== null && (
                 <View style={styles.editorSettingsSheet}>
                     <View style={styles.tabHeader}>
-                        {['color', 'font', 'size'].map(tab => (
-                            <TouchableOpacity key={tab} onPress={() => setActiveTab(tab)} style={[styles.tabBtn, activeTab === tab && styles.activeTab]}>
-                                <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab.toUpperCase()}</Text>
-                            </TouchableOpacity>
-                        ))}
+                        {['color', 'font', 'size'].map(tab => {
+                            const tabLabel = selectedLanguage?.labels?.[`tab_${tab}`] || tab.toUpperCase();
+                            return (
+                                <TouchableOpacity key={tab} onPress={() => setActiveTab(tab)} style={[styles.tabBtn, activeTab === tab && styles.activeTab]}>
+                                    <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+                                        {tabLabel}
+                                    </Text>
+                                </TouchableOpacity>
+                            );
+                        })}
                     </View>
                     <View style={styles.toolContent}>
                         {activeTab === 'color' && (
@@ -305,32 +340,59 @@ export default function Editor({ route, navigation }) {
             <View style={styles.actionBar}>
                 <TouchableOpacity style={styles.actionBtn} onPress={() => { setEditingTarget(1); setShowInput(true); }}>
                     <View style={styles.iconCircle}><Ionicons name="text" size={22} color="#7B61FF" /></View>
-                    <Text style={styles.actionLabel}>Add Text 1</Text>
+                    <Text style={styles.actionLabel}>{selectedLanguage?.labels?.add_text_1 || "Add Text 1"}</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.actionBtn} onPress={handleAddText2Press}>
+                <TouchableOpacity
+                    style={styles.actionBtn}
+                    onPress={handleAddText2Press}
+                    disabled={!isLoaded && !isText2Unlocked && !isEmergencyUnlocked}
+                >
                     <View style={styles.iconCircle}>
-                        <Ionicons name={isText2Unlocked ? "text" : "lock-closed"} size={20} color={isText2Unlocked ? "#7B61FF" : "#F59E0B"} />
+                        {(!isText2Unlocked && !isLoaded && !isEmergencyUnlocked) ? (
+                            <ActivityIndicator size="small" color="#F59E0B" />
+                        ) : (
+                            <Ionicons
+                                name={isText2Unlocked ? "text" : (isEmergencyUnlocked ? "gift" : "lock-closed")}
+                                size={20}
+                                color={isText2Unlocked ? "#7B61FF" : "#F59E0B"}
+                            />
+                        )}
                     </View>
-                    <Text style={styles.actionLabel}>{isText2Unlocked ? "Add Text 2" : "Unlock Text 2"}</Text>
+                    <Text style={[styles.actionLabel, (!isLoaded && !isText2Unlocked && !isEmergencyUnlocked) && { color: '#9CA3AF' }]}>
+                        {isText2Unlocked
+                            ? (selectedLanguage?.labels?.add_text_2 || "Add Text 2")
+                            : (isLoaded || isEmergencyUnlocked ? (selectedLanguage?.labels?.unlock_text_2 || "Unlock Text 2") : "Loading...")}
+                    </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.actionBtn} onPress={toggleFavorite}>
                     <View style={styles.iconCircle}>
                         <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={22} color={isFavorite ? "#EF4444" : "#6B7280"} />
                     </View>
-                    <Text style={styles.actionLabel}>Favorite</Text>
+                    <Text style={styles.actionLabel}>{selectedLanguage?.labels?.favourite_btn || "Favourite"}</Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity style={styles.shareBtn} onPress={handleShare}>
                     <FontAwesome5 name="whatsapp" size={20} color="#fff" />
-                    <Text style={styles.shareBtnText}>Share</Text>
+                    <Text style={styles.shareBtnText}>{selectedLanguage?.labels?.whatsapp_btn || "Share"}</Text>
                 </TouchableOpacity>
             </View>
 
             {showInput && (
                 <View style={styles.fullScreenInput}>
-                    <TextInput style={[styles.hugeInput, { color: editingTarget === 1 ? textColor1 : textColor2, fontFamily: editingTarget === 1 ? fontFamily1 : fontFamily2 }]} value={editingTarget === 1 ? text1 : text2} onChangeText={editingTarget === 1 ? setText1 : setText2} autoFocus multiline />
-                    <TouchableOpacity style={styles.doneBtn} onPress={() => setShowInput(false)}><Text style={styles.doneBtnText}>DONE</Text></TouchableOpacity>
+                    <TextInput
+                        style={[styles.hugeInput, { color: editingTarget === 1 ? textColor1 : textColor2, fontFamily: editingTarget === 1 ? fontFamily1 : fontFamily2 }]}
+                        placeholder={selectedLanguage?.labels?.type_placeholder || "Type here..."}
+                        placeholderTextColor="rgba(255,255,255,0.3)"
+                        value={editingTarget === 1 ? text1 : text2}
+                        onChangeText={editingTarget === 1 ? setText1 : setText2}
+                        autoFocus
+                        multiline
+                    />
+                    <TouchableOpacity style={styles.doneBtn} onPress={() => setShowInput(false)}>
+                        <Text style={styles.doneBtnText}>{selectedLanguage?.labels?.done_btn || "DONE"}</Text>
+                    </TouchableOpacity>
                 </View>
             )}
         </View>
@@ -341,7 +403,7 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#121212' },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     canvasWrapper: { flex: 1, justifyContent: 'flex-start', alignItems: 'center', marginTop: 20, width: '100%' },
-    viewShot: { width: CARD_WIDTH, height: CARD_HEIGHT, backgroundColor: '#000', overflow: 'hidden', marginVertical: 25 },
+    viewShot: { width: CARD_WIDTH, height: CARD_HEIGHT, backgroundColor: '#000', overflow: 'hidden', marginVertical: 10 },
     mainImage: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' },
     draggable: { position: 'absolute', padding: 10, borderWidth: 1, borderColor: 'transparent' },
     activeDraggable: { borderColor: 'rgba(123, 97, 255, 0.7)', borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.1)', borderStyle: 'dashed' },

@@ -118,7 +118,8 @@ export default function ImageGrid({ route, navigation }) {
                 }
             />
 
-            <BannerAdSlot />
+            <BannerAdSlot unitId="ca-app-pub-1193994269728560/4141035227" />
+
         </View>
     );
 }

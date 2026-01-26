@@ -17,7 +17,7 @@ import LanguageSelection from './src/screens/LanguageSelection';
 
 const Stack = createStackNavigator();
 
-// 1. Set the global notification handler (How alerts show when app is open)
+// Set the global notification handler
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -29,14 +29,17 @@ Notifications.setNotificationHandler({
 export default function App() {
   const notificationListener = useRef();
   const responseListener = useRef();
+  const isAdsInitialized = useRef(false); // Ref to track AdMob status
 
   useEffect(() => {
-    // Existing AdMob Init logic
+    // 1. Improved AdMob Init logic
     const initAds = async () => {
-      if (Constants.appOwnership !== 'expo') {
+      // Only initialize if not in Expo Go and not already initialized
+      if (Constants.appOwnership !== 'expo' && !isAdsInitialized.current) {
         try {
           const mobileAds = require('react-native-google-mobile-ads').default;
           await mobileAds().initialize();
+          isAdsInitialized.current = true;
           console.log("AdMob SDK Initialized");
         } catch (error) {
           console.error("AdMob Initialization Error", error);
@@ -50,9 +53,9 @@ export default function App() {
       const token = await registerForPushNotificationsAsync();
       if (token) {
         console.log("Registered Token:", token);
-        // Save to your backend
         try {
-          await apiClient.post('/user/save-push-token', { token });
+          // Verify this endpoint matches your backend exactly!
+          await apiClient.post('/save-push-token', { token });
         } catch (err) {
           console.log("Backend token save failed:", err.message);
         }
@@ -60,18 +63,24 @@ export default function App() {
     };
     setupNotifications();
 
-    // Listeners for when notifications arrive or are tapped
+    // 3. Listeners for foreground notifications
     notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
       console.log("Notification Recv:", notification);
     });
 
+    // 4. Listeners for when notification is tapped
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
       console.log("Notification Tapped:", response);
     });
 
+    // CLEANUP: Correctly removing subscriptions
     return () => {
-      Notifications.removeNotificationSubscription(notificationListener.current);
-      Notifications.removeNotificationSubscription(responseListener.current);
+      if (notificationListener.current) {
+        notificationListener.current.remove();
+      }
+      if (responseListener.current) {
+        responseListener.current.remove();
+      }
     };
   }, []);
 
@@ -88,11 +97,9 @@ export default function App() {
   );
 }
 
-// 3. Helper function to register for tokens
 async function registerForPushNotificationsAsync() {
   let token;
 
-  // Notification channels are required for Android
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
       name: 'default',
@@ -115,7 +122,6 @@ async function registerForPushNotificationsAsync() {
     }
 
     try {
-      // Use the Project ID from your Expo config
       const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
       token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
     } catch (e) {

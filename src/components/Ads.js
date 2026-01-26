@@ -16,16 +16,15 @@ if (Constants.appOwnership !== 'expo') {
 }
 
 // Default ID (used if no specific ID is passed to the component)
-const DEFAULT_BANNER_ID = 'ca-app-pub-1193994269728560/1595311678'; 
+const DEFAULT_BANNER_ID = 'ca-app-pub-1193994269728560/1595311678';
 
 // We accept "unitId" as a prop now
 export const BannerAdSlot = ({ unitId }) => {
   const [adError, setAdError] = useState(false);
 
   // Logic: Use Test ID in Dev mode, otherwise use the provided unitId or the Default one
-  const finalAdUnitId = (TestIds) 
-    ? (__DEV__ ? TestIds.BANNER : (unitId || DEFAULT_BANNER_ID)) 
-    : null;
+  // const finalAdUnitId = unitId || DEFAULT_BANNER_ID; //for real ads in dev mode
+  const finalAdUnitId = (TestIds) ? (__DEV__ ? TestIds.BANNER : (unitId || DEFAULT_BANNER_ID)) : null;
 
   if (!BannerAd || !finalAdUnitId || Constants.appOwnership === 'expo') {
     return (

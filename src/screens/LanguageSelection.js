@@ -135,7 +135,7 @@ export default function LanguageSelection({ navigation }) {
         }}
       />
 
-      <BannerAdSlot />
+      <BannerAdSlot unitId="ca-app-pub-1193994269728560/1595311678" />
     </View>
   );
 }

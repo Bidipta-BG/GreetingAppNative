@@ -130,7 +130,7 @@ export default function CategorySelection({ route, navigation }) {
                 }}
             />
 
-            <BannerAdSlot />
+            <BannerAdSlot unitId="ca-app-pub-1193994269728560/8434453703" />
         </View>
     );
 }

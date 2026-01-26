@@ -13,6 +13,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { BannerAdSlot } from '../components/Ads';
 
 const { width } = Dimensions.get('window');
 const COLUMN_WIDTH = (width - 45) / 2;
@@ -109,6 +110,7 @@ export default function Favorites({ navigation }) {
                     </View>
                 }
             />
+            <BannerAdSlot unitId="ca-app-pub-1193994269728560/4495208698" />
         </View>
     );
 }

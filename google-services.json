@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "285189513867",
+    "project_id": "greetify-f5c33",
+    "storage_bucket": "greetify-f5c33.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:285189513867:android:7ae44ed5fb70d45ddb2a8e",
+        "android_client_info": {
+          "package_name": "com.thevibecoder.greetify"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDCwUEFE6drJicClkolF_7NxaF1SP256rs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
