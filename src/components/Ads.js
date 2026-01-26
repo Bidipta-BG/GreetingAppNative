@@ -4,7 +4,6 @@ import { StyleSheet, Text, View } from 'react-native';
 
 let BannerAd, BannerAdSize, TestIds;
 
-// ONLY require the library if we are NOT in Expo Go
 if (Constants.appOwnership !== 'expo') {
   try {
     const AdLib = require('react-native-google-mobile-ads');
@@ -16,15 +15,19 @@ if (Constants.appOwnership !== 'expo') {
   }
 }
 
-const REAL_AD_UNIT_ID = 'ca-app-pub-1193994269728560/1595311678'; 
-const adUnitId = (TestIds) ? (__DEV__ ? TestIds.BANNER : REAL_AD_UNIT_ID) : null;
+// Default ID (used if no specific ID is passed to the component)
+const DEFAULT_BANNER_ID = 'ca-app-pub-1193994269728560/1595311678'; 
 
-export const BannerAdSlot = () => {
+// We accept "unitId" as a prop now
+export const BannerAdSlot = ({ unitId }) => {
   const [adError, setAdError] = useState(false);
 
-  // Scenario 1: We are in Expo Go (BannerAd is undefined)
-  // Scenario 2: Native build but missing module
-  if (!BannerAd || !adUnitId || Constants.appOwnership === 'expo') {
+  // Logic: Use Test ID in Dev mode, otherwise use the provided unitId or the Default one
+  const finalAdUnitId = (TestIds) 
+    ? (__DEV__ ? TestIds.BANNER : (unitId || DEFAULT_BANNER_ID)) 
+    : null;
+
+  if (!BannerAd || !finalAdUnitId || Constants.appOwnership === 'expo') {
     return (
       <View style={styles.placeholder}>
         <Text style={styles.placeholderText}>Ad Slot (Preview Mode)</Text>
@@ -37,7 +40,7 @@ export const BannerAdSlot = () => {
   return (
     <View style={styles.container}>
       <BannerAd
-        unitId={adUnitId}
+        unitId={finalAdUnitId}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
         onAdFailedToLoad={(error) => {
           console.warn('AdMob Error:', error.message);
