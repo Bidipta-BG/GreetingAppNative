@@ -25,6 +25,7 @@ export default function ImageGrid({ route, navigation }) {
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [favorites, setFavorites] = useState([]);
+    const [imageLoadingStates, setImageLoadingStates] = useState({});
 
     const isFocused = useIsFocused();
 
@@ -37,7 +38,6 @@ export default function ImageGrid({ route, navigation }) {
             headerTintColor: '#7B61FF',
         });
 
-        // Backend call to fetch images for this category/language
         apiClient.get(`/images?language=${language}&category=${category}`)
             .then(res => { if (res.data.success) setImages(res.data.data); })
             .catch(err => console.error(err))
@@ -59,6 +59,14 @@ export default function ImageGrid({ route, navigation }) {
         }
     };
 
+    const handleImageLoadStart = (id) => {
+        setImageLoadingStates(prev => ({ ...prev, [id]: true }));
+    };
+
+    const handleImageLoadEnd = (id) => {
+        setImageLoadingStates(prev => ({ ...prev, [id]: false }));
+    };
+
     if (loading) return (
         <View style={styles.centerLoader}>
             <ActivityIndicator size="large" color="#7B61FF" />
@@ -69,8 +77,6 @@ export default function ImageGrid({ route, navigation }) {
         <View style={styles.container}>
             <StatusBar barStyle="dark-content" />
 
-            {/* <BannerAdSlot /> */}
-
             <FlatList
                 data={images}
                 numColumns={2}
@@ -80,6 +86,7 @@ export default function ImageGrid({ route, navigation }) {
                 contentContainerStyle={styles.listContent}
                 renderItem={({ item }) => {
                     const isFav = favorites.includes(item.imageUrl);
+                    const isImageLoading = imageLoadingStates[item._id] !== false;
 
                     return (
                         <TouchableOpacity
@@ -87,11 +94,23 @@ export default function ImageGrid({ route, navigation }) {
                             style={[styles.card, { height: CARD_HEIGHT }]}
                             onPress={() => navigation.navigate('Editor', {
                                 imageUri: item.imageUrl,
-                                greetingId: item._id, // UPDATED: Pass the mongo _id to editor
+                                greetingId: item._id,
                                 selectedLanguage: selectedLanguage
                             })}
                         >
-                            <Image source={{ uri: item.imageUrl }} style={styles.img} resizeMode="cover" />
+                            {isImageLoading && (
+                                <View style={styles.imageLoaderContainer}>
+                                    <ActivityIndicator size="small" color="#7B61FF" />
+                                </View>
+                            )}
+
+                            <Image
+                                source={{ uri: item.imageUrl }}
+                                style={styles.img}
+                                resizeMode="cover"
+                                onLoadStart={() => handleImageLoadStart(item._id)}
+                                onLoadEnd={() => handleImageLoadEnd(item._id)}
+                            />
 
                             <View style={styles.overlay}>
                                 <View style={styles.favCircle}>
@@ -127,6 +146,13 @@ export default function ImageGrid({ route, navigation }) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#F8F9FC' },
     centerLoader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    imageLoaderContainer: {
+        ...StyleSheet.absoluteFillObject,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#eee',
+        zIndex: 1
+    },
     adPlaceholderTop: {
         height: 60, backgroundColor: '#fff', marginHorizontal: 15, marginVertical: 10,
         borderRadius: 12, justifyContent: 'center', alignItems: 'center',
@@ -144,7 +170,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#eee', overflow: 'hidden', borderWidth: 1, borderColor: '#F3F4F6'
     },
     img: { width: '100%', height: '100%' },
-    overlay: { position: 'absolute', top: 10, right: 10 },
+    overlay: { position: 'absolute', top: 10, right: 10, zIndex: 2 },
     favCircle: {
         width: 30, height: 30, borderRadius: 15, backgroundColor: 'rgba(255, 255, 255, 0.9)',
         justifyContent: 'center', alignItems: 'center', elevation: 3

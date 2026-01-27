@@ -1,0 +1,77 @@
+export default {
+    expo: {
+        name: "Greetify",
+        slug: "GreetingApp",
+        version: "1.0.0",
+        orientation: "portrait",
+        icon: "./assets/images/icon.png",
+        scheme: "greetingapp",
+        userInterfaceStyle: "automatic",
+        newArchEnabled: true,
+        ios: {
+            supportsTablet: true,
+            bundleIdentifier: "com.thevibecoder.greetify"
+        },
+        android: {
+            package: "com.thevibecoder.greetify",
+            googleServicesFile: "./google-services.json",
+            permissions: [
+                "com.google.android.gms.permission.AD_ID",
+                "android.permission.POST_NOTIFICATIONS"
+            ],
+            adaptiveIcon: {
+                backgroundColor: "#FFFFFF",
+                foregroundImage: "./assets/images/android-icon-foreground.png",
+                monochromeImage: "./assets/images/android-icon-monochrome.png"
+            },
+            versionCode: 1,
+            edgeToEdgeEnabled: true,
+            predictiveBackGestureEnabled: false
+        },
+        web: {
+            output: "static",
+            favicon: "./assets/images/favicon.png"
+        },
+        plugins: [
+            "expo-notifications",
+            "expo-router",
+            [
+                "expo-splash-screen",
+                {
+                    "image": "./assets/images/splash-icon.png",
+                    "imageWidth": 200,
+                    "resizeMode": "contain",
+                    "backgroundColor": "#ffffff",
+                    "dark": {
+                        "backgroundColor": "#000000"
+                    }
+                }
+            ],
+            "expo-font",
+            [
+                "react-native-google-mobile-ads",
+                {
+                    "androidAppId": "ca-app-pub-1193994269728560~4108126076",
+                    "iosAppId": "ca-app-pub-1193994269728560~4108126076"
+                }
+            ],
+            [
+                "expo-tracking-transparency",
+                {
+                    "userTrackingPermission": "This identifier will be used to deliver personalized ads to you."
+                }
+            ]
+        ],
+        experiments: {
+            typedRoutes: true,
+            reactCompiler: true
+        },
+        extra: {
+            router: {},
+            eas: {
+                projectId: "1c8e1ba4-85fe-46e6-b1ca-eb4afea8e4f0"
+            }
+        },
+        owner: "bidiptabikashgogoi"
+    }
+};

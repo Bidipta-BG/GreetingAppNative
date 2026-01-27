@@ -7,6 +7,7 @@ import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFonts } from 'expo-font';
 import * as Sharing from 'expo-sharing';
+import * as StoreReview from 'expo-store-review';
 import { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator, Alert, Animated, Dimensions, FlatList,
@@ -20,11 +21,11 @@ import apiClient from '../api/apiClient';
 import Constants from 'expo-constants';
 import { BannerAdSlot } from '../components/Ads';
 
-let useRewardedAd, TestIds;
+let useInterstitialAd, TestIds;
 if (Constants.appOwnership !== 'expo') {
     try {
         const AdLib = require('react-native-google-mobile-ads');
-        useRewardedAd = AdLib.useRewardedAd;
+        useInterstitialAd = AdLib.useInterstitialAd;
         TestIds = AdLib.TestIds;
     } catch (e) {
         console.warn("AdMob library not found in native binary.");
@@ -35,8 +36,8 @@ const { width } = Dimensions.get('window');
 const CARD_WIDTH = width - 20;
 const CARD_HEIGHT = CARD_WIDTH * 1.25;
 
-// Rewarded Test ID for Video Ads
-const rewardedAdUnitId = (TestIds) ? (__DEV__ ? TestIds.REWARDED : 'ca-app-pub-1193994269728560/9611804004') : null;
+// Interstitial Ad ID
+const interstitialAdUnitId = (TestIds) ? (__DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-1193994269728560/6348136406') : null;
 // const rewardedAdUnitId = 'ca-app-pub-1193994269728560/9611804004'
 
 const COLORS = [
@@ -90,14 +91,22 @@ export default function Editor({ route, navigation }) {
 
     const viewShotRef = useRef();
 
-    // 2. REWARDED AD HOOK LOGIC
-    const rewarded = (useRewardedAd && rewardedAdUnitId) ? useRewardedAd(rewardedAdUnitId, {
+    // 2. INTERSTITIAL AD HOOK LOGIC
+    const interstitial = (useInterstitialAd && interstitialAdUnitId) ? useInterstitialAd(interstitialAdUnitId, {
         requestNonPersonalizedAdsOnly: true,
-    }) : { load: () => { }, show: () => { }, isLoaded: false, isEarnedReward: false, isClosed: false };
+    }) : { load: () => { }, show: () => { }, isLoaded: false, isClosed: false };
 
-    const { isLoaded, isEarnedReward, show, load, isClosed } = rewarded;
+    const { isLoaded, show, load, isClosed, error } = interstitial;
 
     // EMERGENCY UNLOCK TIMER LOGIC
+    // Also unlock immediately if there's an ad loading error (No Fill, Network Error, etc.)
+    useEffect(() => {
+        if (error) {
+            // console.log("Ad failed to load:", error);
+            setIsEmergencyUnlocked(true);
+        }
+    }, [error]);
+
     useEffect(() => {
         let timer;
         if (!isText2Unlocked && !isLoaded) {
@@ -109,23 +118,17 @@ export default function Editor({ route, navigation }) {
         return () => { if (timer) clearTimeout(timer); };
     }, [isLoaded, isText2Unlocked]);
 
-    // Auto-load the video ad when the screen opens
+    // Auto-load the ad when the screen opens
     useEffect(() => {
-        if (useRewardedAd) load();
+        if (useInterstitialAd) load();
     }, [load]);
 
-    // Grant the reward when video is finished
+    // Grant the "reward" (unlock) when the interstitial is closed
     useEffect(() => {
-        if (isEarnedReward) {
+        if (isClosed) {
             setIsText2Unlocked(true); // Unlocks the feature permanently for this session
             setEditingTarget(2);      // Immediately selects the second text layer
             setShowInput(true);       // Opens the keyboard/input screen automatically
-        }
-    }, [isEarnedReward]);
-
-    // Reload ad after it is closed so it's ready for next time
-    useEffect(() => {
-        if (isClosed) {
             setIsEmergencyUnlocked(false); // Reset emergency state to try ad again
             load(); // Start fetching the next ad immediately
         }
@@ -202,6 +205,11 @@ export default function Editor({ route, navigation }) {
                 await Sharing.shareAsync(uri);
                 if (greetingId) {
                     apiClient.patch(`/images/${greetingId}/share`).catch(err => console.error(err));
+                }
+
+                // [NEW] Trigger In-App Review
+                if (await StoreReview.hasAction()) {
+                    StoreReview.requestReview();
                 }
             } catch (error) {
                 setWatermarkVisible(false);
@@ -288,7 +296,7 @@ export default function Editor({ route, navigation }) {
 
                         {watermarkVisible && (
                             <View style={styles.watermarkContainer}>
-                                {/* <Text style={styles.watermarkText}>Made with Greetify</Text> */}
+                                <Text style={styles.watermarkText}>Made with Greetify</Text>
                             </View>
                         )}
                     </ImageBackground>
@@ -408,8 +416,8 @@ const styles = StyleSheet.create({
     draggable: { position: 'absolute', padding: 10, borderWidth: 1, borderColor: 'transparent' },
     activeDraggable: { borderColor: 'rgba(123, 97, 255, 0.7)', borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.1)', borderStyle: 'dashed' },
     overlayText: { textAlign: 'center', textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 5 },
-    watermarkContainer: { position: 'absolute', bottom: 10, right: 10, backgroundColor: 'rgba(0,0,0,0.4)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
-    watermarkText: { color: 'rgba(255,255,255,0.8)', fontSize: 10, fontWeight: 'bold' },
+    watermarkContainer: { position: 'absolute', bottom: 6, right: 6, backgroundColor: 'rgba(0,0,0,0.3)', paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6 },
+    watermarkText: { color: 'rgba(255,255,255,0.85)', fontSize: 10, fontWeight: '600', fontStyle: 'italic', letterSpacing: 0.5 },
     editorSettingsSheet: { position: 'absolute', bottom: 105, width: width - 30, marginHorizontal: 15, backgroundColor: '#fff', borderRadius: 20, paddingVertical: 10, paddingHorizontal: 15, elevation: 10, zIndex: 50 },
     tabHeader: { flexDirection: 'row', borderBottomWidth: 1, borderColor: '#F3F4F6', marginBottom: 10, alignItems: 'center', justifyContent: 'flex-start' },
     tabBtn: { paddingVertical: 6, marginRight: 15, borderBottomWidth: 2, borderBottomColor: 'transparent' },
