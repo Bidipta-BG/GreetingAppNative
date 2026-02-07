@@ -6,6 +6,7 @@ import {
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFonts } from 'expo-font';
+import * as MediaLibrary from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
 import * as StoreReview from 'expo-store-review';
 import { useEffect, useRef, useState } from 'react';
@@ -60,8 +61,11 @@ const STYLISH_FONTS = [
     { id: '10', name: 'Classic', family: 'PlayfairDisplay_700Bold' },
 ];
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 export default function Editor({ route, navigation }) {
     const { imageUri, selectedLanguage, greetingId } = route.params;
+    const insets = useSafeAreaInsets();
 
     let [fontsLoaded] = useFonts({
         Lobster_400Regular, Pacifico_400Regular, GreatVibes_400Regular,
@@ -88,6 +92,7 @@ export default function Editor({ route, navigation }) {
     const [isText2Unlocked, setIsText2Unlocked] = useState(false);
     const [isEmergencyUnlocked, setIsEmergencyUnlocked] = useState(false); // New State for Strategy B
     const [watermarkVisible, setWatermarkVisible] = useState(false);
+    const [pendingAction, setPendingAction] = useState(null); // 'text2' or 'download'
 
     const viewShotRef = useRef();
 
@@ -126,10 +131,15 @@ export default function Editor({ route, navigation }) {
     // Grant the "reward" (unlock) when the interstitial is closed
     useEffect(() => {
         if (isClosed) {
-            setIsText2Unlocked(true); // Unlocks the feature permanently for this session
-            setEditingTarget(2);      // Immediately selects the second text layer
-            setShowInput(true);       // Opens the keyboard/input screen automatically
+            if (pendingAction === 'text2') {
+                setIsText2Unlocked(true); // Unlocks the feature permanently for this session
+                setEditingTarget(2);      // Immediately selects the second text layer
+                setShowInput(true);       // Opens the keyboard/input screen automatically
+            } else if (pendingAction === 'download') {
+                saveToGallery();
+            }
             setIsEmergencyUnlocked(false); // Reset emergency state to try ad again
+            setPendingAction(null); // Reset pending action
             load(); // Start fetching the next ad immediately
         }
     }, [isClosed, load]);
@@ -218,18 +228,91 @@ export default function Editor({ route, navigation }) {
         }, 150);
     };
 
+    const saveToGallery = async () => {
+        setEditingTarget(null);
+        setWatermarkVisible(true);
+
+        // Request permissions
+        const { status } = await MediaLibrary.requestPermissionsAsync();
+        if (status !== 'granted') {
+            setWatermarkVisible(false);
+            Alert.alert("Permission required", "We need permission to save images to your gallery.");
+            return;
+        }
+
+        setTimeout(async () => {
+            try {
+                const uri = await viewShotRef.current.capture();
+                setWatermarkVisible(false);
+
+                await MediaLibrary.saveToLibraryAsync(uri);
+
+                if (greetingId) {
+                    apiClient.patch(`/images/${greetingId}/share`).catch(err => console.error(err));
+                }
+
+                Alert.alert("Saved!", "Image saved to your gallery successfully.");
+
+                // Trigger In-App Review
+                if (await StoreReview.hasAction()) {
+                    StoreReview.requestReview();
+                }
+            } catch (error) {
+                setWatermarkVisible(false);
+                Alert.alert("Error", "Could not save image.");
+                console.error(error);
+            }
+        }, 150);
+    };
+
+    const handleDownloadPress = () => {
+        setPendingAction('download');
+        const labels = selectedLanguage?.labels;
+
+        if (isLoaded) {
+            Alert.alert(
+                labels?.download_image || "Download Image",
+                labels?.watch_ad_download || "Watch a short video to download your creation?",
+                [
+                    { text: labels?.cancel_btn || "Cancel", style: "cancel", onPress: () => setPendingAction(null) },
+                    { text: labels?.watch_btn || "Watch Ad", onPress: () => show() }
+                ]
+            );
+        } else if (isEmergencyUnlocked) {
+            Alert.alert(
+                labels?.download_image || "Download Image",
+                "The video is taking too long. Downloading for free!",
+                [
+                    {
+                        text: labels?.ok_btn || "OK",
+                        onPress: () => {
+                            saveToGallery();
+                            setPendingAction(null);
+                        }
+                    }
+                ]
+            );
+        } else {
+            Alert.alert("Ad Loading", labels?.ad_loading || "Video is not ready yet. Please wait a few more seconds...");
+            load();
+            setPendingAction(null);
+        }
+    };
+
     const handleAddText2Press = () => {
         const labels = selectedLanguage?.labels; // Shortcut
+        setPendingAction('text2');
         if (isText2Unlocked) {
             setEditingTarget(2);
             setShowInput(true);
+            setPendingAction(null);
         } else {
             if (isLoaded) {
                 Alert.alert(
                     labels?.unlock_feature || "Unlock Feature",
                     labels?.watch_ad_msg || "Watch a video to add a second text layer.",
                     [
-                        { text: labels?.cancel_btn || "Cancel", style: "cancel" },
+                        { text: labels?.cancel_btn || "Cancel", style: "cancel", onPress: () => setPendingAction(null) },
                         { text: labels?.watch_btn || "Watch Ad", onPress: () => show() }
                     ]
                 );
@@ -245,6 +328,7 @@ export default function Editor({ route, navigation }) {
                                 setIsText2Unlocked(true);
                                 setEditingTarget(2);
                                 setShowInput(true);
+                                setPendingAction(null);
                             }
                         }
                     ]
@@ -252,6 +336,7 @@ export default function Editor({ route, navigation }) {
             } else {
                 Alert.alert("Ad Loading", labels?.ad_loading || "Video is not ready yet. Please wait a few more seconds...");
                 load();
+                setPendingAction(null);
             }
         }
     };
@@ -304,7 +389,7 @@ export default function Editor({ route, navigation }) {
             </View>
 
             {editingTarget !== null && (
-                <View style={styles.editorSettingsSheet}>
+                <View style={[styles.editorSettingsSheet, { bottom: 105 + insets.bottom }]}>
                     <View style={styles.tabHeader}>
                         {['color', 'font', 'size'].map(tab => {
                             const tabLabel = selectedLanguage?.labels?.[`tab_${tab}`] || tab.toUpperCase();
@@ -345,7 +430,7 @@ export default function Editor({ route, navigation }) {
                 </View>
             )}
 
-            <View style={styles.actionBar}>
+            <View style={[styles.actionBar, { paddingBottom: insets.bottom, height: 90 + insets.bottom }]}>
                 <TouchableOpacity style={styles.actionBtn} onPress={() => { setEditingTarget(1); setShowInput(true); }}>
                     <View style={styles.iconCircle}><Ionicons name="text" size={22} color="#7B61FF" /></View>
                     <Text style={styles.actionLabel}>{selectedLanguage?.labels?.add_text_1 || "Add Text 1"}</Text>
@@ -372,6 +457,13 @@ export default function Editor({ route, navigation }) {
                             ? (selectedLanguage?.labels?.add_text_2 || "Add Text 2")
                             : (isLoaded || isEmergencyUnlocked ? (selectedLanguage?.labels?.unlock_text_2 || "Unlock Text 2") : "Loading...")}
                     </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.actionBtn} onPress={handleDownloadPress}>
+                    <View style={styles.iconCircle}>
+                        <Ionicons name="cloud-download" size={22} color="#7B61FF" />
+                    </View>
+                    <Text style={styles.actionLabel}>{selectedLanguage?.labels?.download_btn || "Download"}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.actionBtn} onPress={toggleFavorite}>
