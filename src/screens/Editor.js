@@ -1,7 +1,37 @@
 import {
-    AbrilFatface_400Regular, DancingScript_700Bold, GreatVibes_400Regular,
-    KaushanScript_400Regular, Lobster_400Regular, Monoton_400Regular,
-    Pacifico_400Regular, PermanentMarker_400Regular, PlayfairDisplay_700Bold
+    AbrilFatface_400Regular, Acme_400Regular,
+    AmaticSC_700Bold,
+    ArchitectsDaughter_400Regular,
+    Bangers_400Regular,
+    BebasNeue_400Regular,
+    Caveat_700Bold,
+    Chewy_400Regular,
+    Cinzel_700Bold,
+    Comfortaa_700Bold,
+    Cookie_400Regular,
+    Creepster_400Regular,
+    DancingScript_700Bold,
+    FrederickatheGreat_400Regular,
+    GloriaHallelujah_400Regular,
+    GreatVibes_400Regular,
+    Handlee_400Regular,
+    IndieFlower_400Regular, KaushanScript_400Regular, LilitaOne_400Regular,
+    Lobster_400Regular,
+    LobsterTwo_700Bold_Italic,
+    LuckiestGuy_400Regular,
+    Monoton_400Regular,
+    Orbitron_700Bold,
+    Pacifico_400Regular,
+    PatuaOne_400Regular,
+    PermanentMarker_400Regular,
+    PlayfairDisplay_700Bold,
+    PressStart2P_400Regular,
+    Righteous_400Regular,
+    // NEW MEGA EXPANSION FONTS
+    Sacramento_400Regular,
+    Satisfy_400Regular,
+    ShadowsIntoLight_400Regular,
+    SpecialElite_400Regular
 } from '@expo-google-fonts/dev';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -37,15 +67,32 @@ const { width } = Dimensions.get('window');
 const CARD_WIDTH = width - 20;
 const CARD_HEIGHT = CARD_WIDTH * 1.25;
 
-// Interstitial Ad ID
-const interstitialAdUnitId = (TestIds) ? (__DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-1193994269728560/6348136406') : null;
+// Interstitial Ad IDs Rotation
+const INTERSTITIAL_IDS = [
+    'ca-app-pub-1193994269728560/6348136406',
+    'ca-app-pub-1193994269728560/4644182237',
+    'ca-app-pub-1193994269728560/7924951695'
+];
+
+const getRandomAdId = () => {
+    if (!TestIds) return null;
+    if (__DEV__) return TestIds.INTERSTITIAL;
+    return INTERSTITIAL_IDS[Math.floor(Math.random() * INTERSTITIAL_IDS.length)];
+};
+
+const interstitialAdUnitId = getRandomAdId();
 // const rewardedAdUnitId = 'ca-app-pub-1193994269728560/9611804004'
 
 const COLORS = [
     '#FFFFFF', '#000000', '#7B61FF', '#22C55E', '#EF4444',
     '#3498DB', '#F1C40F', '#E67E22', '#9B59B6', '#1ABC9C',
     '#FF69B4', '#4B0082', '#FF5733', '#C70039', '#FFD700',
-    '#8B4513', '#008080', '#D2691E', '#FF4500', '#2E8B57'
+    '#8B4513', '#008080', '#D2691E', '#FF4500', '#2E8B57',
+    // New Colors
+    '#FF8C00', '#ADFF2F', '#00CED1', '#FF00FF', '#7FFF00',
+    '#FF1493', '#00BFFF', '#FF4500', '#DA70D6', '#32CD32',
+    '#FFDAB9', '#E6E6FA', '#FFFACD', '#F0FFF0', '#F0F8FF',
+    '#B0C4DE', '#98FB98', '#FFB6C1', '#FFA07A', '#F4A460'
 ];
 
 const STYLISH_FONTS = [
@@ -59,42 +106,125 @@ const STYLISH_FONTS = [
     { id: '8', name: 'Serif', family: 'AbrilFatface_400Regular' },
     { id: '9', name: 'Cursive', family: 'DancingScript_700Bold' },
     { id: '10', name: 'Classic', family: 'PlayfairDisplay_700Bold' },
+    // New Fonts
+    { id: '11', name: 'Hand', family: 'IndieFlower_400Regular' },
+    { id: '12', name: 'Happy', family: 'GloriaHallelujah_400Regular' },
+    { id: '13', name: 'Clean', family: 'Acme_400Regular' },
+    { id: '14', name: 'Cartoon', family: 'LilitaOne_400Regular' },
+    { id: '15', name: 'Type', family: 'SpecialElite_400Regular' },
+    { id: '16', name: 'Sweet', family: 'Cookie_400Regular' },
+    { id: '17', name: 'Play', family: 'Chewy_400Regular' },
+    { id: '18', name: 'Futur', family: 'Righteous_400Regular' },
+    { id: '19', name: 'Hero', family: 'Bangers_400Regular' },
+    { id: '20', name: 'Love', family: 'Caveat_700Bold' },
+    // MEGA EXPANSION
+    { id: '21', name: 'Thin', family: 'Sacramento_400Regular' },
+    { id: '22', name: 'Tall', family: 'BebasNeue_400Regular' },
+    { id: '23', name: 'Wobbly', family: 'AmaticSC_700Bold' },
+    { id: '24', name: 'Royal', family: 'Cinzel_700Bold' },
+    { id: '25', name: 'Pixel', family: 'PressStart2P_400Regular' },
+    { id: '26', name: 'SciFi', family: 'Orbitron_700Bold' },
+    { id: '27', name: 'Bubble', family: 'LuckiestGuy_400Regular' },
+    { id: '28', name: 'Brush', family: 'Satisfy_400Regular' },
+    { id: '29', name: 'Doodle', family: 'ShadowsIntoLight_400Regular' },
+    { id: '30', name: 'School', family: 'Handlee_400Regular' },
+    { id: '31', name: 'Arch', family: 'ArchitectsDaughter_400Regular' },
+    { id: '32', name: 'Scary', family: 'Creepster_400Regular' },
+    { id: '33', name: 'Curve', family: 'LobsterTwo_700Bold_Italic' },
+    { id: '34', name: 'Sketch', family: 'FrederickatheGreat_400Regular' },
+    { id: '35', name: 'Block', family: 'PatuaOne_400Regular' },
+    { id: '36', name: 'Round', family: 'Comfortaa_700Bold' },
 ];
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Editor({ route, navigation }) {
-    const { imageUri, selectedLanguage, greetingId } = route.params;
+    const { imageUri, selectedLanguage, greetingId, isTemplate, textLayers } = route.params;
     const insets = useSafeAreaInsets();
 
     let [fontsLoaded] = useFonts({
         Lobster_400Regular, Pacifico_400Regular, GreatVibes_400Regular,
         PlayfairDisplay_700Bold, Monoton_400Regular, KaushanScript_400Regular,
-        AbrilFatface_400Regular, PermanentMarker_400Regular, DancingScript_700Bold
+        AbrilFatface_400Regular, PermanentMarker_400Regular, DancingScript_700Bold,
+        Caveat_700Bold, IndieFlower_400Regular, GloriaHallelujah_400Regular,
+        Acme_400Regular, LilitaOne_400Regular, SpecialElite_400Regular,
+        Cookie_400Regular, Chewy_400Regular, Righteous_400Regular, Bangers_400Regular,
+        Sacramento_400Regular, BebasNeue_400Regular, AmaticSC_700Bold, Cinzel_700Bold,
+        PressStart2P_400Regular, Orbitron_700Bold, LuckiestGuy_400Regular, Satisfy_400Regular,
+        ShadowsIntoLight_400Regular, Handlee_400Regular, ArchitectsDaughter_400Regular,
+        Creepster_400Regular, LobsterTwo_700Bold_Italic, FrederickatheGreat_400Regular,
+        PatuaOne_400Regular, Comfortaa_700Bold
     });
 
-    const [text1, setText1] = useState('');
-    const [textColor1, setTextColor1] = useState('#FFFFFF');
-    const [fontSize1, setFontSize1] = useState(28);
-    const [fontFamily1, setFontFamily1] = useState('System');
-    const pan1 = useRef(new Animated.ValueXY()).current;
+    const [layers, setLayers] = useState([]);
+    const panRefs = useRef([]); // Will store { id, pan, responder } for each layer
 
-    const [text2, setText2] = useState('');
-    const [textColor2, setTextColor2] = useState('#FFFFFF');
-    const [fontSize2, setFontSize2] = useState(28);
-    const [fontFamily2, setFontFamily2] = useState('System');
-    const pan2 = useRef(new Animated.ValueXY()).current;
+    // Initialize layers
+    useEffect(() => {
+        let baseLayers = [];
+        if (isTemplate && textLayers && textLayers.length > 0) {
+            // Convert percentages to approximate pixel positions
+            baseLayers = textLayers.map((l) => ({
+                id: l.id || Math.random().toString(),
+                text: l.text || l.value || '',
+                color: l.color || l.colour || l.hex || '#FFFFFF',
+                fontSize: l.fontSize || l.size || 28,
+                fontFamily: l.fontFamily || l.font || 'System',
+                pan: new Animated.ValueXY({
+                    x: ((l.x || 50) / 100) * CARD_WIDTH - (CARD_WIDTH / 2),
+                    y: ((l.y || 50) / 100) * CARD_HEIGHT - (CARD_HEIGHT / 2)
+                }),
+                isLocked: false,
+                isManual: false
+            }));
+        }
 
-    const [editingTarget, setEditingTarget] = useState(null);
+        // Always add two manual layers for the user to use via bottom buttons
+        const manualLayers = [
+            {
+                id: 'manual_1',
+                text: '',
+                color: '#FFFFFF',
+                fontSize: 28,
+                fontFamily: 'System',
+                pan: new Animated.ValueXY({ x: 0, y: -40 }),
+                isLocked: false,
+                isManual: true
+            },
+            {
+                id: 'manual_2',
+                text: '',
+                color: '#FFFFFF',
+                fontSize: 28,
+                fontFamily: 'System',
+                pan: new Animated.ValueXY({ x: 0, y: 40 }),
+                isLocked: false,
+                isManual: true
+            }
+        ];
+
+        setLayers([...baseLayers, ...manualLayers]);
+    }, [isTemplate, textLayers]);
+
+    const [editingTarget, setEditingTarget] = useState(null); // Now stores the INDEX in the layers array
     const [showInput, setShowInput] = useState(false);
     const [activeTab, setActiveTab] = useState('color');
     const [isFavorite, setIsFavorite] = useState(false);
+    const [isText1Unlocked, setIsText1Unlocked] = useState(false);
     const [isText2Unlocked, setIsText2Unlocked] = useState(false);
+    const [isFavUnlocked, setIsFavUnlocked] = useState(false);
     const [isEmergencyUnlocked, setIsEmergencyUnlocked] = useState(false); // New State for Strategy B
-    const [watermarkVisible, setWatermarkVisible] = useState(false);
     const [pendingAction, setPendingAction] = useState(null); // 'text2' or 'download'
+    const [previewUri, setPreviewUri] = useState(null);
+    const [isLogoActive, setIsLogoActive] = useState(true);
+    const [isLogoCrossVisible, setIsLogoCrossVisible] = useState(true);
+    const [showAdPopup, setShowAdPopup] = useState(false);
+    const [isWaitingForAd, setIsWaitingForAd] = useState(false);
+    const [isAdWatched, setIsAdWatched] = useState(false);
 
     const viewShotRef = useRef();
+    const previewShotRef = useRef();
+    const adTimeoutRef = useRef(null);
 
     // 2. INTERSTITIAL AD HOOK LOGIC
     const interstitial = (useInterstitialAd && interstitialAdUnitId) ? useInterstitialAd(interstitialAdUnitId, {
@@ -102,6 +232,14 @@ export default function Editor({ route, navigation }) {
     }) : { load: () => { }, show: () => { }, isLoaded: false, isClosed: false };
 
     const { isLoaded, show, load, isClosed, error } = interstitial;
+
+    useEffect(() => {
+        if (isWaitingForAd && isLoaded) {
+            if (adTimeoutRef.current) clearTimeout(adTimeoutRef.current);
+            setIsWaitingForAd(false);
+            show();
+        }
+    }, [isLoaded, isWaitingForAd, show]);
 
     // EMERGENCY UNLOCK TIMER LOGIC
     // Also unlock immediately if there's an ad loading error (No Fill, Network Error, etc.)
@@ -120,7 +258,10 @@ export default function Editor({ route, navigation }) {
                 setIsEmergencyUnlocked(true);
             }, 30000); // 30 seconds timeout
         }
-        return () => { if (timer) clearTimeout(timer); };
+        return () => {
+            if (timer) clearTimeout(timer);
+            if (adTimeoutRef.current) clearTimeout(adTimeoutRef.current);
+        };
     }, [isLoaded, isText2Unlocked]);
 
     // Auto-load the ad when the screen opens
@@ -131,18 +272,35 @@ export default function Editor({ route, navigation }) {
     // Grant the "reward" (unlock) when the interstitial is closed
     useEffect(() => {
         if (isClosed) {
-            if (pendingAction === 'text2') {
-                setIsText2Unlocked(true); // Unlocks the feature permanently for this session
-                setEditingTarget(2);      // Immediately selects the second text layer
-                setShowInput(true);       // Opens the keyboard/input screen automatically
-            } else if (pendingAction === 'download') {
-                saveToGallery();
+            if (pendingAction?.startsWith('layer_')) {
+                const index = parseInt(pendingAction.split('_')[1]);
+                setIsText2Unlocked(true); // Unlocks ALL extra layers for the session
+                setEditingTarget(index);
+                setShowInput(true);
+            } else if (pendingAction === 'share' || pendingAction === 'download') {
+                setIsAdWatched(true);
+            } else if (pendingAction === 'logo_removal') {
+                setIsLogoActive(false);
+            } else if (pendingAction === 'text1') {
+                setIsText1Unlocked(true);
+                handleAddOrSelectLayer(layers.length - 2);
+            } else if (pendingAction === 'text2') {
+                setIsText2Unlocked(true);
+                handleAddOrSelectLayer(layers.length - 1);
+            } else if (pendingAction === 'fav') {
+                setIsFavUnlocked(true);
+                toggleFavorite();
             }
-            setIsEmergencyUnlocked(false); // Reset emergency state to try ad again
-            setPendingAction(null); // Reset pending action
-            load(); // Start fetching the next ad immediately
+            setIsEmergencyUnlocked(false);
+            setIsWaitingForAd(false);
+            if (adTimeoutRef.current) clearTimeout(adTimeoutRef.current);
+            // Don't clear pendingAction if it's share or download, so Stage 2 can use it
+            if (pendingAction !== 'share' && pendingAction !== 'download') {
+                setPendingAction(null);
+            }
+            load();
         }
-    }, [isClosed, load]);
+    }, [isClosed, load, pendingAction]);
 
     useEffect(() => {
         navigation.setOptions({
@@ -170,20 +328,39 @@ export default function Editor({ route, navigation }) {
         })
     ).current;
 
-    const createPanResponder = (panValue, id) => PanResponder.create({
-        onStartShouldSetPanResponder: () => true,
-        onMoveShouldSetPanResponder: () => true,
-        onPanResponderGrant: () => {
-            setEditingTarget(id);
-            panValue.setOffset({ x: panValue.x._value, y: panValue.y._value });
-            panValue.setValue({ x: 0, y: 0 });
-        },
-        onPanResponderMove: Animated.event([null, { dx: panValue.x, dy: panValue.y }], { useNativeDriver: false }),
-        onPanResponderRelease: () => { panValue.flattenOffset(); },
-    });
+    // PanResponder factory for the layers
+    const panResponders = useRef({});
+    const pressTimeouts = useRef({});
 
-    const panResponder1 = useRef(createPanResponder(pan1, 1)).current;
-    const panResponder2 = useRef(createPanResponder(pan2, 2)).current;
+    const getPanResponder = (index) => {
+        if (!layers[index]) return null;
+        if (!panResponders.current[index]) {
+            const panValue = layers[index].pan;
+            let startTime = 0;
+
+            panResponders.current[index] = PanResponder.create({
+                onStartShouldSetPanResponder: () => true,
+                onMoveShouldSetPanResponder: () => true,
+                onPanResponderGrant: () => {
+                    startTime = Date.now();
+                    setEditingTarget(index);
+                    panValue.setOffset({ x: panValue.x._value, y: panValue.y._value });
+                    panValue.setValue({ x: 0, y: 0 });
+                },
+                onPanResponderMove: Animated.event([null, { dx: panValue.x, dy: panValue.y }], { useNativeDriver: false }),
+                onPanResponderRelease: (e, gestureState) => {
+                    panValue.flattenOffset();
+                    const duration = Date.now() - startTime;
+                    // If tap is short and movement is minimal, open text input
+                    if (duration < 200 && Math.abs(gestureState.dx) < 5 && Math.abs(gestureState.dy) < 5) {
+                        setEditingTarget(index);
+                        setShowInput(true);
+                    }
+                },
+            });
+        }
+        return panResponders.current[index];
+    };
 
     const toggleFavorite = async () => {
         try {
@@ -204,156 +381,214 @@ export default function Editor({ route, navigation }) {
         } catch (error) { console.error("Error updating favorites", error); }
     };
 
-    const handleShare = async () => {
-        setEditingTarget(null);
-        setWatermarkVisible(true);
 
-        setTimeout(async () => {
-            try {
-                const uri = await viewShotRef.current.capture();
-                setWatermarkVisible(false);
-                await Sharing.shareAsync(uri);
-                if (greetingId) {
-                    apiClient.patch(`/images/${greetingId}/share`).catch(err => console.error(err));
-                }
 
-                // [NEW] Trigger In-App Review
-                if (await StoreReview.hasAction()) {
-                    StoreReview.requestReview();
+    const performFinalShare = async () => {
+        try {
+            setShowAdPopup(false);
+            setIsLogoCrossVisible(false);
+
+            // Small delay to ensure UI updates (cross button vanishes) before capture
+            setTimeout(async () => {
+                try {
+                    const uri = await previewShotRef.current.capture({ format: "jpg", quality: 1.0 });
+                    await Sharing.shareAsync(uri);
+
+                    if (greetingId) {
+                        apiClient.patch(`/images/${greetingId}/share`).catch(err => console.error(err));
+                    }
+
+                    // [NEW] Trigger In-App Review
+                    if (await StoreReview.hasAction()) {
+                        StoreReview.requestReview();
+                    }
+
+                    setPreviewUri(null); // Close preview after success
+                } catch (err) {
+                    Alert.alert("Error", "Could not capture image.");
+                } finally {
+                    setIsLogoCrossVisible(true);
                 }
-            } catch (error) {
-                setWatermarkVisible(false);
-                Alert.alert("Error", "Could not share.");
-            }
-        }, 150);
+            }, 100);
+        } catch (error) {
+            Alert.alert("Error", "Could not share.");
+            setIsLogoCrossVisible(true);
+        }
     };
 
     const saveToGallery = async () => {
         setEditingTarget(null);
-        setWatermarkVisible(true);
 
         // Request permissions
         const { status } = await MediaLibrary.requestPermissionsAsync();
         if (status !== 'granted') {
-            setWatermarkVisible(false);
             Alert.alert("Permission required", "We need permission to save images to your gallery.");
             return;
         }
 
+        try {
+            setShowAdPopup(false);
+            setIsLogoCrossVisible(false);
+
+            // Small delay to ensure UI updates (cross button vanishes) before capture
+            setTimeout(async () => {
+                try {
+                    const uri = await previewShotRef.current.capture({ format: "jpg", quality: 1.0 });
+                    await MediaLibrary.saveToLibraryAsync(uri);
+
+                    if (greetingId) {
+                        apiClient.patch(`/images/${greetingId}/share`).catch(err => console.error(err));
+                    }
+
+                    Alert.alert("Saved!", "Image saved to your gallery successfully! ✨");
+
+                    // Trigger In-App Review
+                    if (await StoreReview.hasAction()) {
+                        StoreReview.requestReview();
+                    }
+
+                    setPreviewUri(null); // Close preview after success
+                    setPendingAction(null);
+                } catch (err) {
+                    Alert.alert("Error", "Could not capture or save image.");
+                } finally {
+                    setIsLogoCrossVisible(true);
+                }
+            }, 100);
+        } catch (error) {
+            Alert.alert("Error", "Could not save image to gallery.");
+            setIsLogoCrossVisible(true);
+            console.error(error);
+        }
+    };
+
+    const handleDownloadPress = () => {
+        setEditingTarget(null);
+        setIsAdWatched(false); // Reset ad status for new preview
+
         setTimeout(async () => {
             try {
-                const uri = await viewShotRef.current.capture();
-                setWatermarkVisible(false);
-
-                await MediaLibrary.saveToLibraryAsync(uri);
-
-                if (greetingId) {
-                    apiClient.patch(`/images/${greetingId}/share`).catch(err => console.error(err));
-                }
-
-                Alert.alert("Saved!", "Image saved to your gallery successfully.");
-
-                // Trigger In-App Review
-                if (await StoreReview.hasAction()) {
-                    StoreReview.requestReview();
-                }
+                const uri = await viewShotRef.current.capture({ format: "jpg", quality: 1.0 });
+                setPreviewUri(uri);
+                setPendingAction('download');
             } catch (error) {
-                setWatermarkVisible(false);
-                Alert.alert("Error", "Could not save image.");
-                console.error(error);
+                Alert.alert("Error", "Could not prepare preview.");
             }
         }, 150);
     };
 
-    const handleDownloadPress = () => {
-        setPendingAction('download');
-        const labels = selectedLanguage?.labels;
+    const handleShare = () => {
+        setEditingTarget(null);
+        setIsAdWatched(false); // Reset ad status for new preview
 
+        setTimeout(async () => {
+            try {
+                const uri = await viewShotRef.current.capture({ format: "jpg", quality: 1.0 });
+                setPreviewUri(uri);
+                setPendingAction('share');
+            } catch (error) {
+                Alert.alert("Error", "Could not prepare preview.");
+            }
+        }, 150);
+    };
+
+    const handleWatchAdClick = () => {
+        setIsWaitingForAd(true);
         if (isLoaded) {
-            Alert.alert(
-                labels?.download_image || "Download Image",
-                labels?.watch_ad_download || "Watch a short video to download your creation?",
-                [
-                    { text: labels?.cancel_btn || "Cancel", style: "cancel", onPress: () => setPendingAction(null) },
-                    { text: labels?.watch_btn || "Watch Ad", onPress: () => show() }
-                ]
-            );
-        } else if (isEmergencyUnlocked) {
-            Alert.alert(
-                labels?.download_image || "Download Image",
-                "The video is taking too long. Downloading for free!",
-                [
-                    {
-                        text: labels?.ok_btn || "OK",
-                        onPress: () => {
-                            saveToGallery();
-                            setPendingAction(null);
-                        }
-                    }
-                ]
-            );
+            // Give 500ms for user to see the "Loading" state before showing ad
+            setTimeout(() => {
+                setIsWaitingForAd(false);
+                show();
+            }, 500);
         } else {
-            Alert.alert("Ad Loading", labels?.ad_loading || "Video is not ready yet. Please wait a few more seconds...");
-            load();
-            setPendingAction(null);
+            // 10 Second safety fallback
+            adTimeoutRef.current = setTimeout(() => {
+                setIsWaitingForAd(false);
+                if (pendingAction === 'logo_removal') {
+                    setIsLogoActive(false);
+                } else {
+                    setIsAdWatched(true);
+                }
+            }, 10000);
         }
     };
 
-    const handleAddText2Press = () => {
-        const labels = selectedLanguage?.labels; // Shortcut
-        setPendingAction('text2');
-        if (isText2Unlocked) {
-            setEditingTarget(2);
-            setShowInput(true);
-            setPendingAction(null);
+    const handleAdGatedLogoRemoval = () => {
+        setPendingAction('logo_removal');
+        setIsWaitingForAd(true);
+
+        if (isLoaded) {
+            // Give a tiny moment for loading state to potentially show if UI has it
+            setTimeout(() => {
+                setIsWaitingForAd(false);
+                show();
+            }, 300);
         } else {
-            if (isLoaded) {
-                Alert.alert(
-                    labels?.unlock_feature || "Unlock Feature",
-                    labels?.watch_ad_msg || "Watch a video to add a second text layer.",
-                    [
-                        { text: labels?.cancel_btn || "Cancel", style: "cancel", onPress: () => setPendingAction(null) },
-                        { text: labels?.watch_btn || "Watch Ad", onPress: () => show() }
-                    ]
-                );
-            } else if (isEmergencyUnlocked) {
-                // Strategy B: Emergency Unlock Alert
-                Alert.alert(
-                    labels?.unlock_feature || "Quick Unlock",
-                    "The video is taking too long to load. To save you time, we've unlocked this feature for you!",
-                    [
-                        {
-                            text: labels?.done_btn || "Awesome!",
-                            onPress: () => {
-                                setIsText2Unlocked(true);
-                                setEditingTarget(2);
-                                setShowInput(true);
-                                setPendingAction(null);
-                            }
-                        }
-                    ]
-                );
-            } else {
-                Alert.alert("Ad Loading", labels?.ad_loading || "Video is not ready yet. Please wait a few more seconds...");
-                load();
+            // 10 Second safety fallback
+            adTimeoutRef.current = setTimeout(() => {
+                setIsWaitingForAd(false);
+                setIsLogoActive(false);
                 setPendingAction(null);
+            }, 10000);
+        }
+    };
+
+    const handleAdGatedAction = (action, isUnlocked, callback) => {
+        if (isUnlocked || isEmergencyUnlocked) {
+            callback();
+        } else {
+            setPendingAction(action);
+            setIsWaitingForAd(true);
+            if (isLoaded) {
+                setTimeout(() => {
+                    setIsWaitingForAd(false);
+                    show();
+                }, 400);
+            } else {
+                adTimeoutRef.current = setTimeout(() => {
+                    setIsWaitingForAd(false);
+                    // Force unlock and trigger action
+                    if (action === 'text1') {
+                        setIsText1Unlocked(true);
+                        handleAddOrSelectLayer(layers.length - 2);
+                    } else if (action === 'text2') {
+                        setIsText2Unlocked(true);
+                        handleAddOrSelectLayer(layers.length - 1);
+                    } else if (action === 'fav') {
+                        setIsFavUnlocked(true);
+                        toggleFavorite();
+                    }
+                    setPendingAction(null);
+                }, 10000);
             }
         }
     };
 
-    const updateActiveColor = (color) => {
-        if (editingTarget === 1) setTextColor1(color);
-        else if (editingTarget === 2) setTextColor2(color);
+    const handleAddOrSelectLayer = (index) => {
+        const layer = layers[index];
+        if (!layer) return;
+
+        setEditingTarget(index);
+        setShowInput(true);
+        setPendingAction(null);
     };
 
-    const updateActiveFont = (font) => {
-        if (editingTarget === 1) setFontFamily1(font);
-        else if (editingTarget === 2) setFontFamily2(font);
+    const updateLayer = (index, updates) => {
+        setLayers(prev => prev.map((l, i) => i === index ? { ...l, ...updates } : l));
+    };
+
+    const updateActiveColor = (color) => {
+        if (editingTarget !== null) updateLayer(editingTarget, { color });
+    };
+
+    const updateActiveFont = (fontFamily) => {
+        if (editingTarget !== null) updateLayer(editingTarget, { fontFamily });
     };
 
     const updateActiveSize = (change) => {
-        if (editingTarget === 1) setFontSize1(fontSize1 + change);
-        else if (editingTarget === 2) setFontSize2(fontSize2 + change);
+        if (editingTarget !== null && layers[editingTarget]) {
+            updateLayer(editingTarget, { fontSize: (layers[editingTarget].fontSize || 28) + change });
+        }
     };
 
     if (!fontsLoaded) return <View style={styles.center}><ActivityIndicator color="#7B61FF" /></View>;
@@ -366,30 +601,37 @@ export default function Editor({ route, navigation }) {
                 <BannerAdSlot unitId="ca-app-pub-1193994269728560/9803375695" />
 
                 <ViewShot ref={viewShotRef} options={{ format: "jpg", quality: 0.9 }} style={styles.viewShot}>
-                    <ImageBackground source={{ uri: imageUri }} style={styles.mainImage} resizeMode="cover" {...backgroundPanResponder.panHandlers}>
-                        {text1 ? (
-                            <Animated.View {...panResponder1.panHandlers} style={[pan1.getLayout(), styles.draggable, editingTarget === 1 && styles.activeDraggable]}>
-                                <Text style={[styles.overlayText, { color: textColor1, fontSize: fontSize1, fontFamily: fontFamily1 }]}>{text1}</Text>
-                            </Animated.View>
-                        ) : null}
+                    <ImageBackground source={{ uri: imageUri }} style={styles.mainImage} resizeMode="cover" onTouchStart={() => setEditingTarget(null)}>
+                        {layers.map((layer, index) => {
+                            const responder = getPanResponder(index);
+                            if (!layer.text && index !== editingTarget) return null;
 
-                        {text2 ? (
-                            <Animated.View {...panResponder2.panHandlers} style={[pan2.getLayout(), styles.draggable, editingTarget === 2 && styles.activeDraggable]}>
-                                <Text style={[styles.overlayText, { color: textColor2, fontSize: fontSize2, fontFamily: fontFamily2 }]}>{text2}</Text>
-                            </Animated.View>
-                        ) : null}
-
-                        {watermarkVisible && (
-                            <View style={styles.watermarkContainer}>
-                                <Text style={styles.watermarkText}>Made with Greetify</Text>
-                            </View>
-                        )}
+                            return (
+                                <Animated.View
+                                    key={layer.id || index}
+                                    {...(responder ? responder.panHandlers : {})}
+                                    style={[
+                                        styles.draggable,
+                                        { transform: layer.pan.getTranslateTransform() },
+                                        editingTarget === index && styles.activeDraggable
+                                    ]}
+                                >
+                                    <Text style={[styles.overlayText, {
+                                        color: layer.color,
+                                        fontSize: layer.fontSize,
+                                        fontFamily: layer.fontFamily
+                                    }]}>
+                                        {layer.text || (index === editingTarget ? "..." : "")}
+                                    </Text>
+                                </Animated.View>
+                            );
+                        })}
                     </ImageBackground>
                 </ViewShot>
             </View>
 
             {editingTarget !== null && (
-                <View style={[styles.editorSettingsSheet, { bottom: 105 + insets.bottom }]}>
+                <View style={[styles.editorSettingsSheet, { bottom: 92 + insets.bottom }]}>
                     <View style={styles.tabHeader}>
                         {['color', 'font', 'size'].map(tab => {
                             const tabLabel = selectedLanguage?.labels?.[`tab_${tab}`] || tab.toUpperCase();
@@ -406,15 +648,26 @@ export default function Editor({ route, navigation }) {
                         {activeTab === 'color' && (
                             <FlatList data={COLORS} horizontal showsHorizontalScrollIndicator={false}
                                 renderItem={({ item }) => (
-                                    <TouchableOpacity style={[styles.colorCircle, { backgroundColor: item }, (editingTarget === 1 ? textColor1 : textColor2) === item && styles.selectedColorCircle]} onPress={() => updateActiveColor(item)} />
+                                    <TouchableOpacity style={[
+                                        styles.colorCircle,
+                                        { backgroundColor: item },
+                                        layers[editingTarget]?.color === item && styles.selectedColorCircle
+                                    ]} onPress={() => updateActiveColor(item)} />
                                 )}
                             />
                         )}
                         {activeTab === 'font' && (
                             <FlatList data={STYLISH_FONTS} horizontal showsHorizontalScrollIndicator={false}
                                 renderItem={({ item }) => (
-                                    <TouchableOpacity style={[styles.fontCard, (editingTarget === 1 ? fontFamily1 : fontFamily2) === item.family && styles.activeFontCard]} onPress={() => updateActiveFont(item.family)}>
-                                        <Text style={[styles.fontCardText, { fontFamily: item.family }, (editingTarget === 1 ? fontFamily1 : fontFamily2) === item.family && { color: '#fff' }]}>{item.name}</Text>
+                                    <TouchableOpacity
+                                        style={[styles.fontCard, layers[editingTarget]?.fontFamily === item.family && styles.activeFontCard]}
+                                        onPress={() => updateActiveFont(item.family)}
+                                    >
+                                        <Text style={[
+                                            styles.fontCardText,
+                                            { fontFamily: item.family },
+                                            layers[editingTarget]?.fontFamily === item.family && { color: '#fff' }
+                                        ]}>{item.name}</Text>
                                     </TouchableOpacity>
                                 )}
                             />
@@ -422,7 +675,7 @@ export default function Editor({ route, navigation }) {
                         {activeTab === 'size' && (
                             <View style={styles.sizeRow}>
                                 <TouchableOpacity onPress={() => updateActiveSize(-2)}><Ionicons name="remove-circle" size={32} color="#7B61FF" /></TouchableOpacity>
-                                <Text style={styles.sizeVal}>{editingTarget === 1 ? fontSize1 : fontSize2}</Text>
+                                <Text style={styles.sizeVal}>{layers[editingTarget]?.fontSize || 28}</Text>
                                 <TouchableOpacity onPress={() => updateActiveSize(2)}><Ionicons name="add-circle" size={32} color="#7B61FF" /></TouchableOpacity>
                             </View>
                         )}
@@ -431,32 +684,21 @@ export default function Editor({ route, navigation }) {
             )}
 
             <View style={[styles.actionBar, { paddingBottom: insets.bottom, height: 90 + insets.bottom }]}>
-                <TouchableOpacity style={styles.actionBtn} onPress={() => { setEditingTarget(1); setShowInput(true); }}>
+                <TouchableOpacity style={styles.actionBtn} onPress={() => handleAdGatedAction('text1', isText1Unlocked, () => handleAddOrSelectLayer(layers.length - 2))}>
                     <View style={styles.iconCircle}><Ionicons name="text" size={22} color="#7B61FF" /></View>
                     <Text style={styles.actionLabel}>{selectedLanguage?.labels?.add_text_1 || "Add Text 1"}</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                    style={styles.actionBtn}
-                    onPress={handleAddText2Press}
-                    disabled={!isLoaded && !isText2Unlocked && !isEmergencyUnlocked}
-                >
+                <TouchableOpacity style={styles.actionBtn} onPress={() => handleAdGatedAction('text2', isText2Unlocked, () => handleAddOrSelectLayer(layers.length - 1))}>
+                    <View style={styles.iconCircle}><Ionicons name="text-outline" size={22} color="#7B61FF" /></View>
+                    <Text style={styles.actionLabel}>{selectedLanguage?.labels?.add_text_2 || "Add Text 2"}</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.actionBtn} onPress={() => handleAdGatedAction('fav', isFavUnlocked, toggleFavorite)}>
                     <View style={styles.iconCircle}>
-                        {(!isText2Unlocked && !isLoaded && !isEmergencyUnlocked) ? (
-                            <ActivityIndicator size="small" color="#F59E0B" />
-                        ) : (
-                            <Ionicons
-                                name={isText2Unlocked ? "text" : (isEmergencyUnlocked ? "gift" : "lock-closed")}
-                                size={20}
-                                color={isText2Unlocked ? "#7B61FF" : "#F59E0B"}
-                            />
-                        )}
+                        <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={22} color={isFavorite ? "#FF4444" : "#7B61FF"} />
                     </View>
-                    <Text style={[styles.actionLabel, (!isLoaded && !isText2Unlocked && !isEmergencyUnlocked) && { color: '#9CA3AF' }]}>
-                        {isText2Unlocked
-                            ? (selectedLanguage?.labels?.add_text_2 || "Add Text 2")
-                            : (isLoaded || isEmergencyUnlocked ? (selectedLanguage?.labels?.unlock_text_2 || "Unlock Text 2") : "Loading...")}
-                    </Text>
+                    <Text style={styles.actionLabel}>{selectedLanguage?.labels?.favourite || "Favourite"}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.actionBtn} onPress={handleDownloadPress}>
@@ -466,12 +708,6 @@ export default function Editor({ route, navigation }) {
                     <Text style={styles.actionLabel}>{selectedLanguage?.labels?.download_btn || "Download"}</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.actionBtn} onPress={toggleFavorite}>
-                    <View style={styles.iconCircle}>
-                        <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={22} color={isFavorite ? "#EF4444" : "#6B7280"} />
-                    </View>
-                    <Text style={styles.actionLabel}>{selectedLanguage?.labels?.favourite_btn || "Favourite"}</Text>
-                </TouchableOpacity>
 
                 <TouchableOpacity style={styles.shareBtn} onPress={handleShare}>
                     <FontAwesome5 name="whatsapp" size={20} color="#fff" />
@@ -479,20 +715,145 @@ export default function Editor({ route, navigation }) {
                 </TouchableOpacity>
             </View>
 
-            {showInput && (
+            {showInput && editingTarget !== null && (
                 <View style={styles.fullScreenInput}>
                     <TextInput
-                        style={[styles.hugeInput, { color: editingTarget === 1 ? textColor1 : textColor2, fontFamily: editingTarget === 1 ? fontFamily1 : fontFamily2 }]}
+                        style={[styles.hugeInput, {
+                            color: layers[editingTarget]?.color,
+                            fontFamily: layers[editingTarget]?.fontFamily
+                        }]}
                         placeholder={selectedLanguage?.labels?.type_placeholder || "Type here..."}
                         placeholderTextColor="rgba(255,255,255,0.3)"
-                        value={editingTarget === 1 ? text1 : text2}
-                        onChangeText={editingTarget === 1 ? setText1 : setText2}
+                        value={layers[editingTarget]?.text}
+                        onChangeText={(txt) => updateLayer(editingTarget, { text: txt })}
                         autoFocus
                         multiline
                     />
                     <TouchableOpacity style={styles.doneBtn} onPress={() => setShowInput(false)}>
                         <Text style={styles.doneBtnText}>{selectedLanguage?.labels?.done_btn || "DONE"}</Text>
                     </TouchableOpacity>
+                </View>
+            )}
+
+            {previewUri && (
+                <View style={styles.previewContainer}>
+                    <View style={styles.previewHeader}>
+                        <TouchableOpacity onPress={() => setPreviewUri(null)} style={styles.closePreviewBtn}>
+                            <Ionicons name="close" size={28} color="#fff" />
+                        </TouchableOpacity>
+                        <Text style={styles.previewTitle}>Share Preview</Text>
+                        <View style={{ width: 28 }} />
+                    </View>
+
+                    <ViewShot ref={previewShotRef} options={{ format: "jpg", quality: 0.9 }} style={styles.previewViewShot}>
+                        <ImageBackground source={{ uri: previewUri }} style={styles.previewImage}>
+                            {isLogoActive && (
+                                <View style={styles.previewWatermark}>
+                                    {isLogoCrossVisible && (
+                                        <TouchableOpacity
+                                            style={styles.logoRemovalBtn}
+                                            onPress={handleAdGatedLogoRemoval}
+                                            disabled={isWaitingForAd && pendingAction === 'logo_removal'}
+                                        >
+                                            {isWaitingForAd && pendingAction === 'logo_removal' ? (
+                                                <ActivityIndicator size="small" color="#FF4444" />
+                                            ) : (
+                                                <Ionicons name="close-circle" size={18} color="#FF4444" />
+                                            )}
+                                        </TouchableOpacity>
+                                    )}
+                                    <View style={styles.watermarkInner}>
+                                        <Text style={styles.watermarkText}>Made with Greetify</Text>
+                                    </View>
+                                </View>
+                            )}
+                        </ImageBackground>
+                    </ViewShot>
+
+                    <TouchableOpacity
+                        style={[styles.finalShareBtn, pendingAction === 'download' && { backgroundColor: '#7B61FF' }]}
+                        onPress={() => setShowAdPopup(true)}
+                    >
+                        <FontAwesome5
+                            name={pendingAction === 'download' ? "download" : "whatsapp"}
+                            size={22}
+                            color="#fff"
+                        />
+                        <Text style={styles.finalShareBtnText}>
+                            {pendingAction === 'download' ? "Download to Gallery" : "Share to WhatsApp"}
+                        </Text>
+                    </TouchableOpacity>
+
+                    {!isLogoActive && (
+                        <TouchableOpacity style={styles.restoreLogoBtn} onPress={() => setIsLogoActive(true)}>
+                            <Text style={styles.restoreLogoText}>Support Greetify (Add Logo)</Text>
+                        </TouchableOpacity>
+                    )}
+
+                    {showAdPopup && (
+                        <View style={styles.qualityOverlay}>
+                            <View style={styles.qualityPopup}>
+                                <Text style={styles.qualityTitle}>
+                                    {isAdWatched
+                                        ? (pendingAction === 'download' ? "Ready to Download!" : "Ready to Share!")
+                                        : "Watch an Ad"}
+                                </Text>
+
+                                <Text style={styles.adPopupText}>
+                                    {isAdWatched
+                                        ? `Thank you for supporting Greetify! You can now ${pendingAction === 'download' ? 'save' : 'share'} your creation.`
+                                        : `Watch a short video to unlock high-quality ${pendingAction === 'download' ? 'downloading' : 'sharing'} and support our app development.`}
+                                </Text>
+
+                                <View style={styles.qualityActions}>
+                                    <TouchableOpacity
+                                        style={styles.qualityCancelBtn}
+                                        onPress={() => setShowAdPopup(false)}
+                                    >
+                                        <Text style={styles.qualityCancelText}>Cancel</Text>
+                                    </TouchableOpacity>
+
+                                    {isAdWatched ? (
+                                        <TouchableOpacity
+                                            style={[styles.qualityConfirmBtn, { backgroundColor: pendingAction === 'download' ? '#7B61FF' : '#22C55E' }]}
+                                            onPress={pendingAction === 'download' ? saveToGallery : performFinalShare}
+                                        >
+                                            <FontAwesome5
+                                                name={pendingAction === 'download' ? "download" : "whatsapp"}
+                                                size={16}
+                                                color="#fff"
+                                            />
+                                            <Text style={[styles.qualityConfirmText, { marginLeft: 8 }]}>
+                                                {pendingAction === 'download' ? "Download Now" : "Share Now"}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ) : (
+                                        <TouchableOpacity
+                                            style={styles.qualityConfirmBtn}
+                                            onPress={handleWatchAdClick}
+                                            disabled={isWaitingForAd}
+                                        >
+                                            {isWaitingForAd ? (
+                                                <ActivityIndicator size="small" color="#fff" />
+                                            ) : (
+                                                <>
+                                                    <FontAwesome5 name="play" size={12} color="#fff" />
+                                                    <Text style={[styles.qualityConfirmText, { marginLeft: 8 }]}>Watch Ad</Text>
+                                                </>
+                                            )}
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+                            </View>
+                        </View>
+                    )}
+                </View>
+            )}
+
+            {isWaitingForAd && !showAdPopup && (
+                <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }]}>
+                    <ActivityIndicator size="large" color="#7B61FF" />
+                    <Text style={{ color: '#fff', marginTop: 15, fontWeight: 'bold' }}>Loading Ad...</Text>
                 </View>
             )}
         </View>
@@ -502,15 +863,15 @@ export default function Editor({ route, navigation }) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#121212' },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    canvasWrapper: { flex: 1, justifyContent: 'flex-start', alignItems: 'center', marginTop: 20, width: '100%' },
-    viewShot: { width: CARD_WIDTH, height: CARD_HEIGHT, backgroundColor: '#000', overflow: 'hidden', marginVertical: 10 },
+    canvasWrapper: { flex: 1, justifyContent: 'flex-start', alignItems: 'center', marginTop: 5, width: '100%' },
+    viewShot: { width: CARD_WIDTH, height: CARD_HEIGHT, backgroundColor: '#000', overflow: 'hidden', marginVertical: 5 },
     mainImage: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' },
     draggable: { position: 'absolute', padding: 10, borderWidth: 1, borderColor: 'transparent' },
     activeDraggable: { borderColor: 'rgba(123, 97, 255, 0.7)', borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.1)', borderStyle: 'dashed' },
     overlayText: { textAlign: 'center', textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 5 },
     watermarkContainer: { position: 'absolute', bottom: 6, right: 6, backgroundColor: 'rgba(0,0,0,0.3)', paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6 },
     watermarkText: { color: 'rgba(255,255,255,0.85)', fontSize: 10, fontWeight: '600', fontStyle: 'italic', letterSpacing: 0.5 },
-    editorSettingsSheet: { position: 'absolute', bottom: 105, width: width - 30, marginHorizontal: 15, backgroundColor: '#fff', borderRadius: 20, paddingVertical: 10, paddingHorizontal: 15, elevation: 10, zIndex: 50 },
+    editorSettingsSheet: { position: 'absolute', bottom: 92, width: width - 30, marginHorizontal: 15, backgroundColor: '#fff', borderRadius: 20, paddingVertical: 10, paddingHorizontal: 15, elevation: 10, zIndex: 50 },
     tabHeader: { flexDirection: 'row', borderBottomWidth: 1, borderColor: '#F3F4F6', marginBottom: 10, alignItems: 'center', justifyContent: 'flex-start' },
     tabBtn: { paddingVertical: 6, marginRight: 15, borderBottomWidth: 2, borderBottomColor: 'transparent' },
     activeTab: { borderBottomColor: '#7B61FF' },
@@ -533,5 +894,32 @@ const styles = StyleSheet.create({
     fullScreenInput: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.95)', justifyContent: 'center', alignItems: 'center', zIndex: 100 },
     hugeInput: { width: '85%', fontSize: 30, textAlign: 'center' },
     doneBtn: { position: 'absolute', top: 60, right: 30 },
-    doneBtnText: { color: '#7B61FF', fontWeight: '900', fontSize: 18 }
+    doneBtnText: { color: '#7B61FF', fontWeight: '900', fontSize: 18 },
+    previewContainer: { ...StyleSheet.absoluteFillObject, backgroundColor: '#000', zIndex: 200, alignItems: 'center' },
+    previewHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', paddingTop: 50, paddingHorizontal: 20, marginBottom: 20 },
+    closePreviewBtn: { padding: 5 },
+    previewTitle: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+    previewViewShot: { width: CARD_WIDTH, height: CARD_HEIGHT, borderRadius: 15, overflow: 'hidden' },
+    previewImage: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' },
+    previewWatermark: { position: 'absolute', bottom: 15, right: 15, flexDirection: 'row', alignItems: 'flex-start' },
+    logoRemovalBtn: { position: 'absolute', top: -10, left: -10, zIndex: 10, backgroundColor: '#fff', borderRadius: 10 },
+    watermarkInner: { backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+    finalShareBtn: { position: 'absolute', bottom: 60, backgroundColor: '#22C55E', width: '85%', height: 60, borderRadius: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', elevation: 10 },
+    finalShareBtnText: { color: '#fff', fontSize: 18, fontWeight: 'bold', marginLeft: 10 },
+    restoreLogoBtn: { position: 'absolute', bottom: 130 },
+    restoreLogoText: { color: '#7B61FF', fontWeight: 'bold', fontSize: 14 },
+    qualityOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', zIndex: 300 },
+    qualityPopup: { width: '85%', backgroundColor: '#fff', borderRadius: 25, padding: 25, alignItems: 'center' },
+    qualityTitle: { fontSize: 22, fontWeight: '800', color: '#111827', marginBottom: 12 },
+    adPopupText: { textAlign: 'center', color: '#4B5563', fontSize: 16, lineHeight: 22, marginBottom: 10 },
+    qualityOption: { flexDirection: 'row', alignItems: 'center', width: '100%', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+    radioCircle: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: '#D1D5DB', justifyContent: 'center', alignItems: 'center', marginRight: 15 },
+    radioSelected: { borderColor: '#7B61FF' },
+    radioInner: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#7B61FF' },
+    qualityLabel: { fontSize: 16, fontWeight: '600', color: '#374151' },
+    qualityActions: { flexDirection: 'row', marginTop: 25, width: '100%', justifyContent: 'space-between' },
+    qualityCancelBtn: { flex: 1, paddingVertical: 12, alignItems: 'center' },
+    qualityCancelText: { color: '#6B7280', fontWeight: 'bold', fontSize: 16 },
+    qualityConfirmBtn: { flex: 1.2, backgroundColor: '#7B61FF', paddingVertical: 12, borderRadius: 12, alignItems: 'center' },
+    qualityConfirmText: { color: '#fff', fontWeight: 'bold', fontSize: 16 }
 });

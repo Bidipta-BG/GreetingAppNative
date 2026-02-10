@@ -2,7 +2,7 @@ export default {
     expo: {
         name: "Greetify",
         slug: "GreetingApp",
-        version: "1.0.0",
+        version: "1.0.3",
         orientation: "portrait",
         icon: "./assets/images/icon.png",
         scheme: "greetingapp",
@@ -24,7 +24,7 @@ export default {
                 foregroundImage: "./assets/images/android-icon-foreground.png",
                 monochromeImage: "./assets/images/android-icon-monochrome.png"
             },
-            versionCode: 1,
+            versionCode: 4,
             edgeToEdgeEnabled: true,
             predictiveBackGestureEnabled: false
         },
