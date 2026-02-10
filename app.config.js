@@ -1,6 +1,6 @@
 export default {
     expo: {
-        name: "Greetify",
+        name: "TemplatePro",
         slug: "GreetingApp",
         version: "1.0.3",
         orientation: "portrait",
