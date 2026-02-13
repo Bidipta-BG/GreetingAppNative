@@ -47,6 +47,7 @@ import {
 } from 'react-native';
 import ViewShot from 'react-native-view-shot';
 import apiClient from '../api/apiClient';
+import { checkAndRequestReview } from '../utils/reviewHelper';
 
 // 1. ADMOB NATIVE IMPORTS
 import Constants from 'expo-constants';
@@ -452,6 +453,7 @@ export default function Editor({ route, navigation }) {
                     }
 
                     Alert.alert("Saved!", "Image saved to your gallery successfully! ✨");
+                    checkAndRequestReview(); // Ask for review safely
 
                     // Trigger In-App Review
                     if (await StoreReview.hasAction()) {
