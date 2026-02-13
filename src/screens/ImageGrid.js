@@ -71,6 +71,7 @@ export default function ImageGrid({ route, navigation }) {
     const [pendingTemplate, setPendingTemplate] = useState(null);
     const [showAdPopup, setShowAdPopup] = useState(false);
     const [isWaitingForAd, setIsWaitingForAd] = useState(false);
+    const [isProcessingReward, setIsProcessingReward] = useState(false); // New state to show loader during delay
     const [isAdWatched, setIsAdWatched] = useState(false);
 
     const adTimeoutRef = useRef(null);
@@ -112,14 +113,21 @@ export default function ImageGrid({ route, navigation }) {
     // Grant the "reward" (unlock) when the interstitial is closed
     useEffect(() => {
         if (isClosed) {
-            if (pendingTemplate) {
-                setUnlockedTemplates(prev => [...prev, pendingTemplate.imageUrl]);
-                navigateToEditor(pendingTemplate);
-            }
-            setIsWaitingForAd(false);
-            setPendingTemplate(null);
-            if (adTimeoutRef.current) clearTimeout(adTimeoutRef.current);
-            load();
+            setIsProcessingReward(true); // Show loader immediately
+            // Add a small delay to allow Ad Activity to fully close prevents "Activity destroyed" crashes
+            const timer = setTimeout(() => {
+                if (pendingTemplate) {
+                    // Do NOT add to unlockedTemplates so it locks again on return
+                    // setUnlockedTemplates(prev => [...prev, pendingTemplate.imageUrl]);
+                    navigateToEditor(pendingTemplate);
+                }
+                setIsWaitingForAd(false);
+                setIsProcessingReward(false); // Hide loader
+                setPendingTemplate(null);
+                load();
+            }, 500); // 500ms delay
+
+            return () => clearTimeout(timer);
         }
     }, [isClosed, load, pendingTemplate]);
 
@@ -175,24 +183,26 @@ export default function ImageGrid({ route, navigation }) {
 
     const handleWatchAdClick = () => {
         setShowAdPopup(false);
-        setIsWaitingForAd(true);
+        setIsProcessingReward(true); // Show loader immediately even before ad starts
 
-        if (isLoaded) {
-            setTimeout(() => {
-                setIsWaitingForAd(false);
-                show();
-            }, 300);
-        } else {
-            // 10 Second safety fallback
-            adTimeoutRef.current = setTimeout(() => {
-                setIsWaitingForAd(false);
-                if (pendingTemplate) {
-                    setUnlockedTemplates(prev => [...prev, pendingTemplate.imageUrl]);
-                    navigateToEditor(pendingTemplate);
-                }
-                setPendingTemplate(null);
-            }, 10000);
-        }
+        // Small delay to allow popup to close smoothness
+        setTimeout(() => {
+            setIsWaitingForAd(true);
+            // If checking for timeout, we can set it here
+            if (!isLoaded) {
+                // 10 Second safety fallback
+                adTimeoutRef.current = setTimeout(() => {
+                    setIsWaitingForAd(false);
+                    setIsProcessingReward(false); // Hide loader if ad fails
+                    if (pendingTemplate) {
+                        // Do NOT add to unlockedTemplates so it locks again on return
+                        // setUnlockedTemplates(prev => [...prev, pendingTemplate.imageUrl]);
+                        navigateToEditor(pendingTemplate);
+                    }
+                    setPendingTemplate(null);
+                }, 10000);
+            }
+        }, 300);
     };
 
     const navigateToEditor = (item) => {
@@ -349,6 +359,13 @@ export default function ImageGrid({ route, navigation }) {
                 <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }]}>
                     <ActivityIndicator size="large" color="#7B61FF" />
                     <Text style={{ color: '#fff', marginTop: 15, fontWeight: 'bold' }}>Loading Ad...</Text>
+                </View>
+            )}
+
+            {isProcessingReward && (
+                <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', zIndex: 1001 }]}>
+                    <ActivityIndicator size="large" color="#22C55E" />
+                    <Text style={{ color: '#fff', marginTop: 15, fontWeight: 'bold', fontSize: 16 }}>Unlocking Template...</Text>
                 </View>
             )}
         </View>

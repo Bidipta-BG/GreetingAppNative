@@ -1,6 +1,7 @@
 import Constants from 'expo-constants';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 let BannerAd, BannerAdSize, TestIds;
 
@@ -21,6 +22,7 @@ const DEFAULT_BANNER_ID = 'ca-app-pub-1193994269728560/1595311678';
 // We accept "unitId" as a prop now
 export const BannerAdSlot = ({ unitId }) => {
   const [adError, setAdError] = useState(false);
+  const insets = useSafeAreaInsets(); // Hook for safe area
 
   // Logic: Use Test ID in Dev mode, otherwise use the provided unitId or the Default one
   // const finalAdUnitId = unitId || DEFAULT_BANNER_ID; //for real ads in dev mode
@@ -28,7 +30,7 @@ export const BannerAdSlot = ({ unitId }) => {
 
   if (!BannerAd || !finalAdUnitId || Constants.appOwnership === 'expo') {
     return (
-      <View style={styles.placeholder}>
+      <View style={[styles.placeholder, { marginBottom: insets.bottom }]}>
         <Text style={styles.placeholderText}>Ad Slot (Preview Mode)</Text>
       </View>
     );
@@ -37,7 +39,7 @@ export const BannerAdSlot = ({ unitId }) => {
   if (adError) return null;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
       <BannerAd
         unitId={finalAdUnitId}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}

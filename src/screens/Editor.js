@@ -220,7 +220,9 @@ export default function Editor({ route, navigation }) {
     const [isLogoCrossVisible, setIsLogoCrossVisible] = useState(true);
     const [showAdPopup, setShowAdPopup] = useState(false);
     const [isWaitingForAd, setIsWaitingForAd] = useState(false);
+    const [isProcessingReward, setIsProcessingReward] = useState(false); // New state to show loader during delay
     const [isAdWatched, setIsAdWatched] = useState(false);
+    const [previewMode, setPreviewMode] = useState('share'); // 'share' or 'download'
 
     const viewShotRef = useRef();
     const previewShotRef = useRef();
@@ -272,33 +274,42 @@ export default function Editor({ route, navigation }) {
     // Grant the "reward" (unlock) when the interstitial is closed
     useEffect(() => {
         if (isClosed) {
-            if (pendingAction?.startsWith('layer_')) {
-                const index = parseInt(pendingAction.split('_')[1]);
-                setIsText2Unlocked(true); // Unlocks ALL extra layers for the session
-                setEditingTarget(index);
-                setShowInput(true);
-            } else if (pendingAction === 'share' || pendingAction === 'download') {
-                setIsAdWatched(true);
-            } else if (pendingAction === 'logo_removal') {
-                setIsLogoActive(false);
-            } else if (pendingAction === 'text1') {
-                setIsText1Unlocked(true);
-                handleAddOrSelectLayer(layers.length - 2);
-            } else if (pendingAction === 'text2') {
-                setIsText2Unlocked(true);
-                handleAddOrSelectLayer(layers.length - 1);
-            } else if (pendingAction === 'fav') {
-                setIsFavUnlocked(true);
-                toggleFavorite();
-            }
-            setIsEmergencyUnlocked(false);
-            setIsWaitingForAd(false);
-            if (adTimeoutRef.current) clearTimeout(adTimeoutRef.current);
-            // Don't clear pendingAction if it's share or download, so Stage 2 can use it
-            if (pendingAction !== 'share' && pendingAction !== 'download') {
-                setPendingAction(null);
-            }
-            load();
+            // Keep loader active for logo removal, or trigger it for others if needed
+            if (pendingAction === 'logo_removal') setIsProcessingReward(true);
+
+            // Add a small delay to allow Ad Activity to fully close prevents "Activity destroyed" crashes
+            const timer = setTimeout(() => {
+                if (pendingAction?.startsWith('layer_')) {
+                    const index = parseInt(pendingAction.split('_')[1]);
+                    setIsText2Unlocked(true); // Unlocks ALL extra layers for the session
+                    setEditingTarget(index);
+                    setShowInput(true);
+                } else if (pendingAction === 'share' || pendingAction === 'download') {
+                    setIsAdWatched(true);
+                } else if (pendingAction === 'logo_removal') {
+                    setIsLogoActive(false);
+                } else if (pendingAction === 'text1') {
+                    setIsText1Unlocked(true);
+                    handleAddOrSelectLayer(layers.length - 2);
+                } else if (pendingAction === 'text2') {
+                    setIsText2Unlocked(true);
+                    handleAddOrSelectLayer(layers.length - 1);
+                } else if (pendingAction === 'fav') {
+                    setIsFavUnlocked(true);
+                    toggleFavorite();
+                }
+                setIsEmergencyUnlocked(false);
+                setIsWaitingForAd(false);
+                setIsProcessingReward(false); // Hide loader
+                if (adTimeoutRef.current) clearTimeout(adTimeoutRef.current);
+                // Don't clear pendingAction if it's share or download, so Stage 2 can use it
+                if (pendingAction !== 'share' && pendingAction !== 'download') {
+                    setPendingAction(null);
+                }
+                load();
+            }, 500); // 500ms delay
+
+            return () => clearTimeout(timer);
         }
     }, [isClosed, load, pendingAction]);
 
@@ -465,6 +476,7 @@ export default function Editor({ route, navigation }) {
     const handleDownloadPress = () => {
         setEditingTarget(null);
         setIsAdWatched(false); // Reset ad status for new preview
+        setPreviewMode('download');
 
         setTimeout(async () => {
             try {
@@ -480,6 +492,7 @@ export default function Editor({ route, navigation }) {
     const handleShare = () => {
         setEditingTarget(null);
         setIsAdWatched(false); // Reset ad status for new preview
+        setPreviewMode('share');
 
         setTimeout(async () => {
             try {
@@ -493,40 +506,35 @@ export default function Editor({ route, navigation }) {
     };
 
     const handleWatchAdClick = () => {
-        setIsWaitingForAd(true);
-        if (isLoaded) {
-            // Give 500ms for user to see the "Loading" state before showing ad
-            setTimeout(() => {
-                setIsWaitingForAd(false);
-                show();
-            }, 500);
-        } else {
-            // 10 Second safety fallback
-            adTimeoutRef.current = setTimeout(() => {
-                setIsWaitingForAd(false);
-                if (pendingAction === 'logo_removal') {
-                    setIsLogoActive(false);
-                } else {
-                    setIsAdWatched(true);
-                }
-            }, 10000);
-        }
+        setIsProcessingReward(true); // Show loader immediately
+        // Small delay to allow popup to close smoothness
+        setTimeout(() => {
+            setIsWaitingForAd(true);
+            if (!isLoaded) {
+                // 10 Second safety fallback
+                adTimeoutRef.current = setTimeout(() => {
+                    setIsWaitingForAd(false);
+                    setIsProcessingReward(false); // Hide loader if ad fails
+                    if (pendingAction === 'logo_removal') {
+                        setIsLogoActive(false);
+                    } else {
+                        setIsAdWatched(true);
+                    }
+                }, 10000);
+            }
+        }, 300);
     };
 
     const handleAdGatedLogoRemoval = () => {
         setPendingAction('logo_removal');
+        setIsProcessingReward(true); // Show loader immediately
         setIsWaitingForAd(true);
 
-        if (isLoaded) {
-            // Give a tiny moment for loading state to potentially show if UI has it
-            setTimeout(() => {
-                setIsWaitingForAd(false);
-                show();
-            }, 300);
-        } else {
+        if (!isLoaded) {
             // 10 Second safety fallback
             adTimeoutRef.current = setTimeout(() => {
                 setIsWaitingForAd(false);
+                setIsProcessingReward(false); // Hide loader if ad fails
                 setIsLogoActive(false);
                 setPendingAction(null);
             }, 10000);
@@ -539,12 +547,8 @@ export default function Editor({ route, navigation }) {
         } else {
             setPendingAction(action);
             setIsWaitingForAd(true);
-            if (isLoaded) {
-                setTimeout(() => {
-                    setIsWaitingForAd(false);
-                    show();
-                }, 400);
-            } else {
+
+            if (!isLoaded) {
                 adTimeoutRef.current = setTimeout(() => {
                     setIsWaitingForAd(false);
                     // Force unlock and trigger action
@@ -741,7 +745,9 @@ export default function Editor({ route, navigation }) {
                         <TouchableOpacity onPress={() => setPreviewUri(null)} style={styles.closePreviewBtn}>
                             <Ionicons name="close" size={28} color="#fff" />
                         </TouchableOpacity>
-                        <Text style={styles.previewTitle}>Share Preview</Text>
+                        <Text style={styles.previewTitle}>
+                            {previewMode === 'download' ? "Download Preview" : "Share Preview"}
+                        </Text>
                         <View style={{ width: 28 }} />
                     </View>
 
@@ -771,16 +777,19 @@ export default function Editor({ route, navigation }) {
                     </ViewShot>
 
                     <TouchableOpacity
-                        style={[styles.finalShareBtn, pendingAction === 'download' && { backgroundColor: '#7B61FF' }]}
-                        onPress={() => setShowAdPopup(true)}
+                        style={[styles.finalShareBtn, previewMode === 'download' && { backgroundColor: '#7B61FF' }]}
+                        onPress={() => {
+                            setPendingAction(previewMode);
+                            setShowAdPopup(true);
+                        }}
                     >
                         <FontAwesome5
-                            name={pendingAction === 'download' ? "download" : "whatsapp"}
+                            name={previewMode === 'download' ? "download" : "whatsapp"}
                             size={22}
                             color="#fff"
                         />
                         <Text style={styles.finalShareBtnText}>
-                            {pendingAction === 'download' ? "Download to Gallery" : "Share to WhatsApp"}
+                            {previewMode === 'download' ? "Download to Gallery" : "Share to WhatsApp"}
                         </Text>
                     </TouchableOpacity>
 
@@ -795,14 +804,14 @@ export default function Editor({ route, navigation }) {
                             <View style={styles.qualityPopup}>
                                 <Text style={styles.qualityTitle}>
                                     {isAdWatched
-                                        ? (pendingAction === 'download' ? "Ready to Download!" : "Ready to Share!")
+                                        ? (previewMode === 'download' ? "Ready to Download!" : "Ready to Share!")
                                         : "Watch an Ad"}
                                 </Text>
 
                                 <Text style={styles.adPopupText}>
                                     {isAdWatched
-                                        ? `Thank you for supporting Greetify! You can now ${pendingAction === 'download' ? 'save' : 'share'} your creation.`
-                                        : `Watch a short video to unlock high-quality ${pendingAction === 'download' ? 'downloading' : 'sharing'} and support our app development.`}
+                                        ? `Thank you for supporting Greetify! You can now ${previewMode === 'download' ? 'save' : 'share'} your creation.`
+                                        : `Watch a short video to unlock high-quality ${previewMode === 'download' ? 'downloading' : 'sharing'} and support our app development.`}
                                 </Text>
 
                                 <View style={styles.qualityActions}>
@@ -815,16 +824,16 @@ export default function Editor({ route, navigation }) {
 
                                     {isAdWatched ? (
                                         <TouchableOpacity
-                                            style={[styles.qualityConfirmBtn, { backgroundColor: pendingAction === 'download' ? '#7B61FF' : '#22C55E' }]}
-                                            onPress={pendingAction === 'download' ? saveToGallery : performFinalShare}
+                                            style={[styles.qualityConfirmBtn, { backgroundColor: previewMode === 'download' ? '#7B61FF' : '#22C55E' }]}
+                                            onPress={previewMode === 'download' ? saveToGallery : performFinalShare}
                                         >
                                             <FontAwesome5
-                                                name={pendingAction === 'download' ? "download" : "whatsapp"}
+                                                name={previewMode === 'download' ? "download" : "whatsapp"}
                                                 size={16}
                                                 color="#fff"
                                             />
                                             <Text style={[styles.qualityConfirmText, { marginLeft: 8 }]}>
-                                                {pendingAction === 'download' ? "Download Now" : "Share Now"}
+                                                {previewMode === 'download' ? "Download Now" : "Share Now"}
                                             </Text>
                                         </TouchableOpacity>
                                     ) : (
@@ -854,6 +863,15 @@ export default function Editor({ route, navigation }) {
                 <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }]}>
                     <ActivityIndicator size="large" color="#7B61FF" />
                     <Text style={{ color: '#fff', marginTop: 15, fontWeight: 'bold' }}>Loading Ad...</Text>
+                </View>
+            )}
+
+            {isProcessingReward && (
+                <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', zIndex: 1001 }]}>
+                    <ActivityIndicator size="large" color="#22C55E" />
+                    <Text style={{ color: '#fff', marginTop: 15, fontWeight: 'bold', fontSize: 16 }}>
+                        {pendingAction === 'logo_removal' ? "Removing Logo..." : "Unlocking..."}
+                    </Text>
                 </View>
             )}
         </View>
