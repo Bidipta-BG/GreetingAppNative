@@ -14,7 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
 import Constants from 'expo-constants';
 import { useFonts } from 'expo-font';
-import { useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Dimensions,
@@ -61,12 +61,85 @@ const CARD_HEIGHT = COLUMN_WIDTH * 1.25; // Matching Editor.js aspect ratio (4:5
 const EDITOR_WIDTH = width - 20;
 const SCALE = COLUMN_WIDTH / EDITOR_WIDTH;
 
+// --- OPTIMIZED IMAGE CARD COMPONENT ---
+// Keeps its own loading state to prevent whole grid re-renders
+const ImageCard = memo(({ item, isFav, onPress }) => {
+    const [isLoading, setIsLoading] = useState(true);
+
+    return (
+        <TouchableOpacity
+            activeOpacity={0.9}
+            style={[styles.card, { height: CARD_HEIGHT }]}
+            onPress={() => onPress(item)}
+        >
+            {isLoading && (
+                <View style={styles.imageLoaderContainer}>
+                    <ActivityIndicator size="small" color="#7B61FF" />
+                </View>
+            )}
+
+            <ImageBackground
+                source={{ uri: item.imageUrl }}
+                style={styles.img}
+                resizeMode="cover"
+                onLoadStart={() => setIsLoading(true)}
+                onLoadEnd={() => setIsLoading(false)}
+            >
+                {item.isTemplate && item.textLayers && (
+                    <View style={styles.templateOverlay}>
+                        {item.textLayers.map((layer, idx) => (
+                            <View key={layer.id || idx} style={[
+                                styles.miniDraggable,
+                                {
+                                    transform: [
+                                        { translateX: (layer.x / 100) * COLUMN_WIDTH - (COLUMN_WIDTH / 2) },
+                                        { translateY: (layer.y / 100) * CARD_HEIGHT - (CARD_HEIGHT / 2) }
+                                    ]
+                                }
+                            ]}>
+                                <Text style={{
+                                    color: layer.color || layer.hex || '#fff',
+                                    fontSize: (layer.fontSize || 28) * SCALE,
+                                    fontFamily: layer.fontFamily || 'System',
+                                    textAlign: 'center'
+                                }}>
+                                    {layer.text}
+                                </Text>
+                            </View>
+                        ))}
+                    </View>
+                )}
+            </ImageBackground>
+
+            {item.isTemplate && (
+                <View style={styles.premiumOverlay}>
+                    <View style={styles.premiumCircle}>
+                        <FontAwesome5 name="crown" size={10} color="#fff" />
+                    </View>
+                </View>
+            )}
+
+            <View style={styles.overlay}>
+                <View style={styles.favCircle}>
+                    <Ionicons
+                        name={isFav ? "heart" : "heart-outline"}
+                        size={16}
+                        color={isFav ? "#EF4444" : "#7B61FF"}
+                    />
+                </View>
+            </View>
+        </TouchableOpacity>
+    );
+}, (prev, next) => {
+    return prev.item._id === next.item._id && prev.isFav === next.isFav;
+});
+
 export default function ImageGrid({ route, navigation }) {
     const { language, category, selectedLanguage } = route.params;
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [favorites, setFavorites] = useState([]);
-    const [imageLoadingStates, setImageLoadingStates] = useState({});
+    // Removed specific imageLoadingStates - now handled inside ImageCard
     const [unlockedTemplates, setUnlockedTemplates] = useState([]);
     const [pendingTemplate, setPendingTemplate] = useState(null);
     const [showAdPopup, setShowAdPopup] = useState(false);
@@ -117,8 +190,6 @@ export default function ImageGrid({ route, navigation }) {
             // Add a small delay to allow Ad Activity to fully close prevents "Activity destroyed" crashes
             const timer = setTimeout(() => {
                 if (pendingTemplate) {
-                    // Do NOT add to unlockedTemplates so it locks again on return
-                    // setUnlockedTemplates(prev => [...prev, pendingTemplate.imageUrl]);
                     navigateToEditor(pendingTemplate);
                 }
                 setIsWaitingForAd(false);
@@ -161,15 +232,8 @@ export default function ImageGrid({ route, navigation }) {
         }
     };
 
-    const handleImageLoadStart = (id) => {
-        setImageLoadingStates(prev => ({ ...prev, [id]: true }));
-    };
-
-    const handleImageLoadEnd = (id) => {
-        setImageLoadingStates(prev => ({ ...prev, [id]: false }));
-    };
-
-    const handleAdGatedSelection = (item) => {
+    // Callback for card press - memoized to prevent re-creation
+    const handleCardPress = useCallback((item) => {
         // Direct entry if already unlocked OR not a template
         if (!item.isTemplate || unlockedTemplates.includes(item.imageUrl)) {
             navigateToEditor(item);
@@ -179,7 +243,7 @@ export default function ImageGrid({ route, navigation }) {
         // Otherwise show supportive popup
         setPendingTemplate(item);
         setShowAdPopup(true);
-    };
+    }, [unlockedTemplates, navigateToEditor]); // Depend on unlock state
 
     const handleWatchAdClick = () => {
         setShowAdPopup(false);
@@ -195,8 +259,6 @@ export default function ImageGrid({ route, navigation }) {
                     setIsWaitingForAd(false);
                     setIsProcessingReward(false); // Hide loader if ad fails
                     if (pendingTemplate) {
-                        // Do NOT add to unlockedTemplates so it locks again on return
-                        // setUnlockedTemplates(prev => [...prev, pendingTemplate.imageUrl]);
                         navigateToEditor(pendingTemplate);
                     }
                     setPendingTemplate(null);
@@ -205,7 +267,7 @@ export default function ImageGrid({ route, navigation }) {
         }, 300);
     };
 
-    const navigateToEditor = (item) => {
+    const navigateToEditor = useCallback((item) => {
         navigation.navigate('Editor', {
             imageUri: item.imageUrl,
             greetingId: item._id,
@@ -213,7 +275,21 @@ export default function ImageGrid({ route, navigation }) {
             isTemplate: item.isTemplate,
             textLayers: item.textLayers
         });
-    };
+    }, [navigation, selectedLanguage]);
+
+    const renderItem = useCallback(({ item }) => (
+        <ImageCard
+            item={item}
+            isFav={favorites.includes(item.imageUrl)}
+            onPress={handleCardPress}
+        />
+    ), [favorites, handleCardPress]);
+
+    const getItemLayout = useCallback((data, index) => ({
+        length: CARD_HEIGHT + 15, // Height + MarginBottom
+        offset: (CARD_HEIGHT + 15) * Math.floor(index / 2), // 2 Columns
+        index,
+    }), []);
 
     if (loading || !fontsLoaded) return (
         <View style={styles.centerLoader}>
@@ -232,75 +308,12 @@ export default function ImageGrid({ route, navigation }) {
                 columnWrapperStyle={styles.row}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.listContent}
-                renderItem={({ item }) => {
-                    const isFav = favorites.includes(item.imageUrl);
-                    const isImageLoading = imageLoadingStates[item._id] !== false;
-
-                    return (
-                        <TouchableOpacity
-                            activeOpacity={0.9}
-                            style={[styles.card, { height: CARD_HEIGHT }]}
-                            onPress={() => handleAdGatedSelection(item)}
-                        >
-                            {isImageLoading && (
-                                <View style={styles.imageLoaderContainer}>
-                                    <ActivityIndicator size="small" color="#7B61FF" />
-                                </View>
-                            )}
-
-                            <ImageBackground
-                                source={{ uri: item.imageUrl }}
-                                style={styles.img}
-                                resizeMode="cover"
-                                onLoadStart={() => handleImageLoadStart(item._id)}
-                                onLoadEnd={() => handleImageLoadEnd(item._id)}
-                            >
-                                {item.isTemplate && item.textLayers && (
-                                    <View style={styles.templateOverlay}>
-                                        {item.textLayers.map((layer, idx) => (
-                                            <View key={layer.id || idx} style={[
-                                                styles.miniDraggable,
-                                                {
-                                                    transform: [
-                                                        { translateX: (layer.x / 100) * COLUMN_WIDTH - (COLUMN_WIDTH / 2) },
-                                                        { translateY: (layer.y / 100) * CARD_HEIGHT - (CARD_HEIGHT / 2) }
-                                                    ]
-                                                }
-                                            ]}>
-                                                <Text style={{
-                                                    color: layer.color || layer.hex || '#fff',
-                                                    fontSize: (layer.fontSize || 28) * SCALE,
-                                                    fontFamily: layer.fontFamily || 'System',
-                                                    textAlign: 'center'
-                                                }}>
-                                                    {layer.text}
-                                                </Text>
-                                            </View>
-                                        ))}
-                                    </View>
-                                )}
-                            </ImageBackground>
-
-                            {item.isTemplate && (
-                                <View style={styles.premiumOverlay}>
-                                    <View style={styles.premiumCircle}>
-                                        <FontAwesome5 name="crown" size={10} color="#fff" />
-                                    </View>
-                                </View>
-                            )}
-
-                            <View style={styles.overlay}>
-                                <View style={styles.favCircle}>
-                                    <Ionicons
-                                        name={isFav ? "heart" : "heart-outline"}
-                                        size={16}
-                                        color={isFav ? "#EF4444" : "#7B61FF"}
-                                    />
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-                    );
-                }}
+                renderItem={renderItem}
+                initialNumToRender={8} // Render screen worth first
+                maxToRenderPerBatch={8}
+                windowSize={5} // Keep less offscreen
+                removeClippedSubviews={true} // Unmount offscreen
+                getItemLayout={getItemLayout} // Optimize scrolling
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
                         <Ionicons name="images-outline" size={60} color="#D1D5DB" />
