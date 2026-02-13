@@ -19,8 +19,8 @@ if (Constants.appOwnership !== 'expo') {
 // Default ID (used if no specific ID is passed to the component)
 const DEFAULT_BANNER_ID = 'ca-app-pub-1193994269728560/1595311678';
 
-// We accept "unitId" as a prop now
-export const BannerAdSlot = ({ unitId }) => {
+// We accept "unitId" and "containerStyle" as props now
+export const BannerAdSlot = ({ unitId, containerStyle }) => {
   const [adError, setAdError] = useState(false);
   const insets = useSafeAreaInsets(); // Hook for safe area
 
@@ -30,7 +30,7 @@ export const BannerAdSlot = ({ unitId }) => {
 
   if (!BannerAd || !finalAdUnitId || Constants.appOwnership === 'expo') {
     return (
-      <View style={[styles.placeholder, { marginBottom: insets.bottom }]}>
+      <View style={[styles.placeholder, { marginBottom: insets.bottom }, containerStyle]}>
         <Text style={styles.placeholderText}>Ad Slot (Preview Mode)</Text>
       </View>
     );
@@ -39,7 +39,7 @@ export const BannerAdSlot = ({ unitId }) => {
   if (adError) return null;
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+    <View style={[styles.container, { paddingBottom: insets.bottom }, containerStyle]}>
       <BannerAd
         unitId={finalAdUnitId}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}

@@ -602,7 +602,10 @@ export default function Editor({ route, navigation }) {
             <StatusBar barStyle="light-content" />
 
             <View style={styles.canvasWrapper}>
-                <BannerAdSlot unitId="ca-app-pub-1193994269728560/9803375695" />
+                <BannerAdSlot
+                    unitId="ca-app-pub-1193994269728560/9803375695"
+                    containerStyle={{ paddingVertical: 0, paddingBottom: 0 }}
+                />
 
                 <ViewShot ref={viewShotRef} options={{ format: "jpg", quality: 0.9 }} style={styles.viewShot}>
                     <ImageBackground source={{ uri: imageUri }} style={styles.mainImage} resizeMode="cover" onTouchStart={() => setEditingTarget(null)}>
@@ -769,7 +772,7 @@ export default function Editor({ route, navigation }) {
                                         </TouchableOpacity>
                                     )}
                                     <View style={styles.watermarkInner}>
-                                        <Text style={styles.watermarkText}>Made with Greetify</Text>
+                                        <Text style={styles.watermarkText}>Made with TemplatePro</Text>
                                     </View>
                                 </View>
                             )}
@@ -795,7 +798,7 @@ export default function Editor({ route, navigation }) {
 
                     {!isLogoActive && (
                         <TouchableOpacity style={styles.restoreLogoBtn} onPress={() => setIsLogoActive(true)}>
-                            <Text style={styles.restoreLogoText}>Support Greetify (Add Logo)</Text>
+                            <Text style={styles.restoreLogoText}>Support TemplatePro (Add Logo)</Text>
                         </TouchableOpacity>
                     )}
 
@@ -810,8 +813,8 @@ export default function Editor({ route, navigation }) {
 
                                 <Text style={styles.adPopupText}>
                                     {isAdWatched
-                                        ? `Thank you for supporting Greetify! You can now ${previewMode === 'download' ? 'save' : 'share'} your creation.`
-                                        : `Watch a short video to unlock high-quality ${previewMode === 'download' ? 'downloading' : 'sharing'} and support our app development.`}
+                                        ? `Thank you for supporting TemplatePro! You can now ${previewMode === 'download' ? 'save' : 'share'} your creation.`
+                                        : `Watch a short video to unlock high-quality ${previewMode === 'download' ? 'downloading' : 'sharing'}.`}
                                 </Text>
 
                                 <View style={styles.qualityActions}>
@@ -881,8 +884,8 @@ export default function Editor({ route, navigation }) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#121212' },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    canvasWrapper: { flex: 1, justifyContent: 'flex-start', alignItems: 'center', marginTop: 5, width: '100%' },
-    viewShot: { width: CARD_WIDTH, height: CARD_HEIGHT, backgroundColor: '#000', overflow: 'hidden', marginVertical: 5 },
+    canvasWrapper: { flex: 1, justifyContent: 'flex-start', alignItems: 'center', marginTop: 0, width: '100%' },
+    viewShot: { width: CARD_WIDTH, height: CARD_HEIGHT, backgroundColor: '#000', overflow: 'hidden', marginTop: 3, marginBottom: 5 },
     mainImage: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' },
     draggable: { position: 'absolute', padding: 10, borderWidth: 1, borderColor: 'transparent' },
     activeDraggable: { borderColor: 'rgba(123, 97, 255, 0.7)', borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.1)', borderStyle: 'dashed' },

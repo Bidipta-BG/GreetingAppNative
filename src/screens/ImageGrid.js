@@ -132,7 +132,7 @@ export default function ImageGrid({ route, navigation }) {
     }, [isClosed, load, pendingTemplate]);
 
     useEffect(() => {
-        const nativeTitle = selectedLanguage?.labels?.choose_image || "Choose Image";
+        const nativeTitle = selectedLanguage?.labels?.choose_image || "Choose Template";
         navigation.setOptions({
             title: nativeTitle,
             headerStyle: { backgroundColor: '#F8F9FC', elevation: 0, shadowOpacity: 0 },
@@ -324,7 +324,7 @@ export default function ImageGrid({ route, navigation }) {
                         </View>
                         <Text style={styles.qualityTitle}>Premium Template</Text>
                         <Text style={styles.adPopupText}>
-                            Watch a short video to use this professional template and support our app development.
+                            Watch a short video to use this professional template.
                         </Text>
                         <View style={styles.qualityActions}>
                             <TouchableOpacity

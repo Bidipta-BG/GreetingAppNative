@@ -89,7 +89,7 @@ export default function App() {
       <Stack.Navigator initialRouteName="LanguageSelection">
         <Stack.Screen name="LanguageSelection" component={LanguageSelection} options={{ headerShown: false }} />
         <Stack.Screen name="CategorySelection" component={CategorySelection} options={{ title: 'Select Category' }} />
-        <Stack.Screen name="ImageGrid" component={ImageGrid} options={{ title: 'Choose Image' }} />
+        <Stack.Screen name="ImageGrid" component={ImageGrid} options={{ title: 'Choose Template' }} />
         <Stack.Screen name="Editor" component={Editor} options={{ title: 'Preview & Share' }} />
         <Stack.Screen name="Favorites" component={Favorites} options={{ title: 'My Favorites' }} />
       </Stack.Navigator>
