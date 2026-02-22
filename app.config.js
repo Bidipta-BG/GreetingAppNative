@@ -2,7 +2,7 @@ export default {
     expo: {
         name: "TemplatePro",
         slug: "GreetingApp",
-        version: "1.0.3",
+        version: "1.0.4",
         orientation: "portrait",
         icon: "./assets/images/icon.png",
         scheme: "greetingapp",
@@ -24,7 +24,7 @@ export default {
                 foregroundImage: "./assets/images/android-icon-foreground.png",
                 monochromeImage: "./assets/images/android-icon-monochrome.png"
             },
-            versionCode: 4,
+            versionCode: 5,
             edgeToEdgeEnabled: true,
             predictiveBackGestureEnabled: false
         },
@@ -68,7 +68,7 @@ export default {
         extra: {
             router: {},
             eas: {
-                projectId: "ac738139-6c84-4389-af03-3f7e17a33686"
+                projectId: "1c8e1ba4-85fe-46e6-b1ca-eb4afea8e4f0"
             }
         },
 

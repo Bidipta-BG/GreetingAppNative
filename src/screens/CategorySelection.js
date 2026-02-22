@@ -8,6 +8,7 @@ import {
     StatusBar,
     StyleSheet,
     Text,
+    TextInput,
     TouchableOpacity,
     View,
 } from 'react-native';
@@ -29,6 +30,7 @@ export default function CategorySelection({ route, navigation }) {
     const { selectedLanguage } = route.params;
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         const nativeTitle = selectedLanguage?.labels?.select_category || "Select Category";
@@ -76,14 +78,36 @@ export default function CategorySelection({ route, navigation }) {
         </View>
     );
 
+    const filteredCategories = categories.filter(item => {
+        const mainText = (item.name[selectedLanguage.code] || item.name['en'] || '').toLowerCase();
+        return mainText.includes(searchQuery.toLowerCase());
+    });
+
     return (
         <View style={styles.container}>
             <StatusBar barStyle="dark-content" />
 
             {/* <BannerAdSlot /> */}
 
+            <View style={styles.searchContainer}>
+                <Ionicons name="search-outline" size={20} color="#9CA3AF" style={styles.searchIcon} />
+                <TextInput
+                    style={styles.searchInput}
+                    placeholder={selectedLanguage?.labels?.search || "Search categories..."}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    placeholderTextColor="#9CA3AF"
+                    clearButtonMode="while-editing"
+                />
+                {searchQuery.length > 0 && (
+                    <TouchableOpacity onPress={() => setSearchQuery('')}>
+                        <Ionicons name="close-circle" size={18} color="#9CA3AF" />
+                    </TouchableOpacity>
+                )}
+            </View>
+
             <FlatList
-                data={categories}
+                data={filteredCategories}
                 keyExtractor={item => item.slug}
                 numColumns={2}
                 columnWrapperStyle={styles.row}
@@ -196,5 +220,33 @@ const styles = StyleSheet.create({
         height: 35,
     },
     categoryText: { fontSize: 15, fontWeight: '800', color: '#374151', textAlign: 'center', marginBottom: 10 },
-    arrowCircle: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#F9FAFB', justifyContent: 'center', alignItems: 'center' }
+    arrowCircle: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#F9FAFB', justifyContent: 'center', alignItems: 'center' },
+    searchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        marginHorizontal: 15,
+        marginTop: 15,
+        marginBottom: 5,
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: '#F3F4F6',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 2,
+    },
+    searchIcon: {
+        marginRight: 10,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 16,
+        color: '#1F2937',
+        fontWeight: '500',
+        paddingVertical: 0, // Fix for Android vertical padding
+    },
 });
